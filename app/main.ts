@@ -1,10 +1,13 @@
-import { app, BrowserWindow, screen } from 'electron';
+import { app, BrowserWindow, ipcMain, ipcRenderer, screen } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as url from 'url';
+import TypescriptParser from './typescript-parser/typescript-parser';
+import { ITypescriptParserResults } from './typescript-parser/typescript-parser-results';
 
-// Initialize remote module
-require('@electron/remote/main').initialize();
+require('electron-reload')(__dirname, {
+  electron: path.join(__dirname, 'node_modules/.bin/electron.cmd')
+});
 
 let win: BrowserWindow = null;
 const args = process.argv.slice(1),
@@ -68,7 +71,20 @@ try {
   // initialization and is ready to create browser windows.
   // Some APIs can only be used after this event occurs.
   // Added 400 ms to fix the black background issue while using transparent window. More detais at https://github.com/electron/electron/issues/15947
-  app.on('ready', () => setTimeout(createWindow, 400));
+  app.on('ready', () => {
+    setTimeout(createWindow, 400);
+  });
+
+  ipcMain.on('requestResults', (event, path: string) => {
+    const typescriptParser: TypescriptParser = new TypescriptParser();
+    debugger;
+    typescriptParser.parseFiles(path + '/**/*.module.ts')
+      .then((typescriptParserResults) => {
+        const _results: ITypescriptParserResults = typescriptParserResults.getResult();
+        fs.writeFileSync('results.json', JSON.stringify(_results));
+        event.sender.send('results', _results);
+      });
+  })
 
   // Quit when all windows are closed.
   app.on('window-all-closed', () => {

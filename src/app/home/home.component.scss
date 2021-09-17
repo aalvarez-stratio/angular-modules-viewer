@@ -1,3 +1,40 @@
 :host {
-  
+  display: block;
+  width: 100%;
+  height: 100%;
+
+  .graph-manager {
+    width: 100%;
+    height: 100%;
+
+    .graph-manager__header {
+      box-sizing: border-box;
+      height: 70px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--npa-spacing-16);
+
+      --npa-component-width: 400px;
+    }
+
+    .graph-manager__graph-container {
+      width: 100%;
+      height: calc(100% - 70px);
+
+      npa-spinner, .graph-manager__graph {
+        display: flex;
+        width: 100%;
+        height: calc(100% - 1px); // Workaround for spinner svg rotation.
+      }
+
+      .graph-manager__graph--hide {
+        width: 0;
+        height: 0;
+        display: none;
+        position: absolute;
+      }
+    }
+  }
 }

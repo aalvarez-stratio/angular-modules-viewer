@@ -1,7 +1,22 @@
-<div class="container">
-  <h1 class="title">
-    {{ 'PAGES.HOME.TITLE' | translate }}
-  </h1>
+<div class="graph-manager">
+  <div class="graph-manager__header">
+    <div class="graph-manager__url">
+      <div>
+        <label for="url" class="npa-color--space-6"></label>
+        <input
+          id="url"
+          type="text"
+          class="npa-input"
+          placeholder="Type a folder path..."
+          [formControl]="urlControl"
+          npaFb>
+      </div>
+    </div>
+    <button class="npa-button" (click)="requestResults()">Load Graph</button>
+  </div>
+  <div class="graph-manager__graph-container">
+    <div id="graph" class="graph-manager__graph" [class.graph-manager__graph--hide]="loadingGraph$ | async"></div>
+    <npa-spinner *ngIf="loadingGraph$ | async"></npa-spinner>
+  </div>
 
-  <a routerLink="/detail">{{ 'PAGES.HOME.GO_TO_DETAIL' | translate }}</a>
 </div>

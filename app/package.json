@@ -4,6 +4,13 @@
   "main": "main.js",
   "private": true,
   "dependencies": {
-    "@electron/remote": "1.2.0"
+    "@egjs/hammerjs": "^2.0.17",
+    "@electron/remote": "1.2.0",
+    "glob": "^7.1.7",
+    "keycharm": "^0.4.0",
+    "ngx-electron": "^2.2.0",
+    "vis-data": "^7.1.2",
+    "vis-network": "^9.1.0",
+    "vis-util": "^5.0.2"
   }
 }

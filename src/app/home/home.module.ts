@@ -1,13 +1,26 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
 
 import { HomeRoutingModule } from './home-routing.module';
 
 import { HomeComponent } from './home.component';
-import { SharedModule } from '../shared/shared.module';
+import { NgxElectronModule } from 'ngx-electron';
+import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormBehaviorModule } from '@circe/form-behavior';
+import { SpinnerModule } from '@circe/spinner';
 
 @NgModule({
   declarations: [HomeComponent],
-  imports: [CommonModule, SharedModule, HomeRoutingModule]
+  imports: [
+    CommonModule,
+    TranslateModule,
+    FormsModule,
+    HomeRoutingModule,
+    NgxElectronModule,
+    FormBehaviorModule,
+    ReactiveFormsModule,
+    SpinnerModule
+  ]
 })
 export class HomeModule {}
