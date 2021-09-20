@@ -1,84 +1,125 @@
-import * as ts from 'typescript';
-import {
-  ArrayLiteralExpression,
-  CallExpression,
-  ClassDeclaration,
-  Decorator,
-  Expression,
-  Identifier,
-  NodeArray,
-  ObjectLiteralExpression,
-  PropertyAssignment
-} from 'typescript';
-import * as fs from 'fs';
 import TypescriptParserResults from './typescript-parser-results';
+import {
+  Project,
+  ArrayLiteralExpression,
+  SourceFile,
+  Decorator,
+  Node,
+  SpreadElement,
+  PropertyAssignment
+} from 'ts-morph';
+import NgModuleMetadata from './ng-module-metadata';
 
 export default class TypescriptParser {
 
+  private readonly _ngModules: NgModuleMetadata[];
+  private readonly _injectables: string[];
+  private readonly _components: string[];
+  private readonly _directives: string[];
+  private readonly _pipes: string[];
   private readonly _results: TypescriptParserResults;
 
   constructor() {
+    this._ngModules = [];
+    this._injectables = [];
+    this._components = [];
+    this._directives = [];
+    this._pipes = [];
     this._results = new TypescriptParserResults();
   }
 
-  private _readFiles(path: string): Promise<string[]> {
-    const glob = require('glob');
-    return new Promise<string[]>((resolve) => {
-      glob(path, (err, res) => {
-        resolve(res);
-      });
-    });
-  }
-
-  parseFiles(path: string): Promise<TypescriptParserResults> {
+  readFiles(path: string): Promise<TypescriptParserResults> {
     return new Promise<TypescriptParserResults>((resolve) => {
-      this._readFiles(path).then((fileNames: string[]) => {
-        for (const _fileName of fileNames) {
-          this.parseFile(_fileName);
-        }
-
-        resolve(this._results);
+      const project = new Project({
+        tsConfigFilePath: path + '/tsconfig.json'
       });
+      for (const _sourceFile of project.getSourceFiles()) {
+
+        this._searchClasses(_sourceFile);
+        this._searchRoutes(_sourceFile);
+      }
+      this._addAngularMetadataToResults();
+      resolve(this._results);
     });
   }
 
-  parseFile(filePath: string): void {
-    const node = ts.createSourceFile(
-      'x.ts',   // fileName
-      fs.readFileSync(filePath, 'utf8'), // sourceText
-      ts.ScriptTarget.Latest // langugeVersion
-    );
+  private _searchClasses(sourceFile: SourceFile): void {
+    for (const _class of sourceFile.getClasses()) {
+      const _classDecorators: Decorator[] = _class.getDecorators();
+      for (const _decorator of _classDecorators) {
+        const _decoratorName: string = _decorator.getName();
+        if (_decoratorName === 'NgModule') {
+          this._ngModules.push(new NgModuleMetadata(_class.getName(), _decorator));
+        } else if (_decoratorName === 'Injectable') {
+          this._injectables.push(_class.getName());
+        } else if (_decoratorName === 'Component') {
+          this._components.push(_class.getName());
+        } else if (_decoratorName === 'Directive') {
+          this._directives.push(_class.getName());
+        } else if (_decoratorName === 'Pipe') {
+          this._pipes.push(_class.getName());
+        }
+      }
+    }
+  }
 
-    node.forEachChild(child => {
-      if (ts.isClassDeclaration(child)) {
-        const _classDeclaration: ClassDeclaration = child;
+  private _addAngularMetadataToResults(): void {
+    for (const _ngModule of this._ngModules) {
+      this._results.addNode(_ngModule.name, 'module');
+      this._results.addEdgesToNode(_ngModule.name, _ngModule.getDeclarations(), 'default');
+      this._results.addEdgesToNode(_ngModule.name, _ngModule.getProviders(), 'default');
+      this._results.addEdgesToNode(_ngModule.name, _ngModule.getImports(), 'default');
+      this._results.addEdgesToNode(_ngModule.name, _ngModule.getExports(), 'default');
+    }
+    this._results.addNodes(this._injectables, 'injectable');
+    this._results.addNodes(this._components, 'component');
+    this._results.addNodes(this._directives, 'directive');
+    this._results.addNodes(this._pipes, 'pipe');
+  }
 
+  private _searchRoutes(sourceFile: SourceFile): void {
+    for (const _variableStatement of sourceFile.getVariableStatements()) {
+      for (const _variableDeclaration of _variableStatement.getDeclarations()) {
+        try {
+          if (_variableDeclaration.getType()?.getAliasSymbol()?.getName() === 'Routes') {
+            for (const _variableDeclarationChildren of _variableDeclaration.getChildren()) {
+              this._processRoutes(sourceFile.getClasses()[0]?.getName() ?? '', _variableDeclarationChildren)
+            }
+          }
+        } catch(e) {
+          console.log('ERROR: Coudn\'t parse ' + _variableDeclaration.getName());
+          console.log(e);
+        }
+      }
+    }
+  }
 
-        if (_classDeclaration.decorators?.length) {
-          const _decoratorDeclaration: Decorator = _classDeclaration.decorators[0];
-          const _decoratorCallExpression: CallExpression = _decoratorDeclaration.expression as CallExpression;
-          const _decoratorIdentifier: Identifier = _decoratorCallExpression.expression as Identifier;
-
-          if (_decoratorIdentifier.escapedText === 'NgModule') {
-            const _decoratorObject: ObjectLiteralExpression = _decoratorCallExpression.arguments[0] as ObjectLiteralExpression;
-            const _className: string = String(_classDeclaration.name.escapedText);
-            const _imports: PropertyAssignment = _decoratorObject.properties.find((d: PropertyAssignment) =>
-              (d.name as Identifier).escapedText === 'imports'
-            ) as PropertyAssignment;
-
-            if (_imports) {
-              const _importElements: NodeArray<Expression> = (_imports.initializer as ArrayLiteralExpression).elements as NodeArray<Expression>;
-              const _moduleNames: string[] = _importElements
-                .filter((e: Identifier) => ts.isIdentifier(e))
-                .map((e: Identifier) => String(e.escapedText));
-
-              this._results.addNode(_className);
-              this._results.addEdges(_className, _moduleNames);
+  private _processRoutes(fromNodeName: string, routes: Node): void {
+    if (Node.isArrayLiteralExpression(routes)) {
+      for (const _route of routes.getElements()) {
+        if (Node.isObjectLiteralExpression(_route)) {
+          const _loadChildren = _route.getProperty('loadChildren');
+          const _children = _route.getProperty('children');
+          if (_loadChildren && fromNodeName) {
+            const propertyValue = (_loadChildren as PropertyAssignment).getInitializer()
+            this._results.addEdgesToNode(
+                fromNodeName,
+                [propertyValue.getText().split('.').pop().split(')')[0]]
+            )
+          } else if (Node.isPropertyAssignment(_children)) {
+            this._processRoutes(fromNodeName, _children.getInitializer())
+          }
+        } else if (Node.isSpreadElement(_route)) {
+          for (const _spreadElementToken of _route.getChildren()) {
+            if (Node.isIdentifier(_spreadElementToken) && _spreadElementToken.getDefinitionNodes().length) {
+              const _variableDeclaration = _spreadElementToken.getDefinitionNodes()[0];
+              if (Node.isVariableDeclaration(_variableDeclaration)) {
+                this._processRoutes(fromNodeName, _variableDeclaration.getInitializer());
+              }
             }
           }
         }
       }
-    });
+    }
   }
-
 }

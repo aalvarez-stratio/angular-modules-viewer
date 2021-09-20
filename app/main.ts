@@ -78,7 +78,7 @@ try {
   ipcMain.on('requestResults', (event, path: string) => {
     const typescriptParser: TypescriptParser = new TypescriptParser();
     debugger;
-    typescriptParser.parseFiles(path + '/**/*.module.ts')
+    typescriptParser.readFiles(path)
       .then((typescriptParserResults) => {
         const _results: ITypescriptParserResults = typescriptParserResults.getResult();
         fs.writeFileSync('results.json', JSON.stringify(_results));

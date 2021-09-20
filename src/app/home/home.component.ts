@@ -7,38 +7,89 @@ import { IdType, Options } from 'vis-network';
 import { FormControl } from '@angular/forms';
 import { BehaviorSubject, Subject } from 'rxjs';
 
+export interface IAngularMetadataAggregations {
+  module: number;
+  component: number;
+  directive: number;
+  pipe: number;
+  service: number;
+}
+
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent {
 
   public urlControl: FormControl;
   public loadingGraph$: Subject<boolean> = new Subject<boolean>();
+  public graphAggregations$: BehaviorSubject<IAngularMetadataAggregations> = new BehaviorSubject<IAngularMetadataAggregations>(null);
 
   private network: vis.Network;
   private nodesDataset: DataSet<vis.Node>;
   private edgesDataset: DataSet<vis.Edge>;
   private highlightActive = false;
-  private allNodes: any[] = [];
 
   constructor(private cd: ChangeDetectorRef, private electron: ElectronService) {
-    this.urlControl = new FormControl('/home/aalvarez/Proyectos/governance-ui/src');
-  }
-
-  ngOnInit(): void {
-    console.log('HomeComponent INIT 2');
+    this.urlControl = new FormControl('/home/aalvarez/Proyectos/governance-ui');
   }
 
   public requestResults(): void {
     this.electron.ipcRenderer.on('results', (event, _results) => {
-      console.log(_results);
       const container = document.getElementById('graph');
       this.nodesDataset = new DataSet(_results.nodes);
       this.edgesDataset = new DataSet(_results.edges);
       const data = { nodes: this.nodesDataset, edges: this.edgesDataset };
       const options: Options = {
+        groups: {
+          module: {
+            color: {
+              background: '#b9d8f9',
+              border: '#0776df'
+            },
+            shape: 'box',
+            margin: { bottom: 15, top: 15, left: 15, right: 15 }
+          },
+          component: {
+            color: {
+              background: '#bae8be',
+              border: '#1db540'
+            },
+            shape: 'box',
+            margin: { bottom: 15, top: 15, left: 15, right: 15 }
+          },
+          directive: {
+            color: {
+              background: '#f9e0ff',
+              border: '#bc3cf9'
+            },
+            shape: 'box',
+            margin: { bottom: 15, top: 15, left: 15, right: 15 }
+          },
+          pipe: {
+            color: {
+              background: '#ffe2db',
+              border: '#ef4034'
+            },
+            shape: 'box',
+            margin: { bottom: 15, top: 15, left: 15, right: 15 }
+          },
+          injectable: {
+            color: {
+              background: '#ffe3c7',
+              border: '#d16e34'
+            },
+            shape: 'box',
+            margin: { bottom: 15, top: 15, left: 15, right: 15 }
+          },
+          hidden: {
+            color: {
+              background: '#eaeff5',
+              border: '#eaeff5'
+            }
+          }
+        },
         layout: {
           hierarchical: {
             direction: 'UD',
@@ -57,10 +108,16 @@ export class HomeComponent implements OnInit {
       };
       this.network = new vis.Network(container, data, options);
       this.network.setOptions({ physics: false });
-      this.allNodes = this.nodesDataset.get({ returnType: 'Object' }) as any;
 
       this.network.on('click', this.neighbourhoodHighlight.bind(this));
       this.loadingGraph$.next(false);
+      this.graphAggregations$.next({
+        module: this.nodesDataset.get({ filter: (item) => item.group === 'module' }).length,
+        component: this.nodesDataset.get({ filter: (item) => item.group === 'component' }).length,
+        service: this.nodesDataset.get({ filter: (item) => item.group === 'service' }).length,
+        directive: this.nodesDataset.get({ filter: (item) => item.group === 'directive' }).length,
+        pipe: this.nodesDataset.get({ filter: (item) => item.group === 'pipe' }).length,
+      });
       this.cd.detectChanges();
     });
     this.loadingGraph$.next(true);
@@ -68,88 +125,82 @@ export class HomeComponent implements OnInit {
   }
 
   private neighbourhoodHighlight(params) {
+    const allNodes = this.nodesDataset.get({ returnType: 'Object' }) as any;
+    const allEdges = this.edgesDataset.get({ returnType: 'Object' }) as any;
     // if something is selected:
     if (params.nodes.length > 0) {
       this.highlightActive = true;
-      let i = 0;
-      let j = 0;
       const selectedNode = params.nodes[0];
       const degrees = 1;
 
       // mark all nodes as hard to read.
       // eslint-disable-next-line guard-for-in
-      for (const nodeId in this.allNodes) {
-        this.allNodes[nodeId].color = 'rgba(200,200,200,0.5)';
-        if (this.allNodes[nodeId].hiddenLabel === undefined) {
-          this.allNodes[nodeId].hiddenLabel = this.allNodes[nodeId].label;
-          this.allNodes[nodeId].label = undefined;
+      for (const nodeId in allNodes) {
+        if (!allNodes[nodeId].hiddenLabel && !allNodes[nodeId].hiddenGroup) {
+          allNodes[nodeId] = {
+            ...allNodes[nodeId],
+            group: 'hidden',
+            hiddenGroup: allNodes[nodeId].group,
+            hiddenLabel: allNodes[nodeId].label,
+            label: undefined
+          };
         }
       }
-      const connectedNodes = this.network.getConnectedNodes(selectedNode, 'to');
-      let allConnectedNodes = [];
-
-      // get the second degree nodes
-      for (i = 1; i < degrees; i++) {
-        for (j = 0; j < connectedNodes.length; j++) {
-          if (isIdType(connectedNodes[j])) {
-            allConnectedNodes = allConnectedNodes.concat(this.network.getConnectedNodes(connectedNodes[j] as IdType, 'to'));
-          }
-        }
-      }
-
-      // all second degree nodes get a different color and their label back
-      for (i = 0; i < allConnectedNodes.length; i++) {
-        this.allNodes[allConnectedNodes[i]].color = 'rgba(150,150,150,0.75)';
-        if (this.allNodes[allConnectedNodes[i]].hiddenLabel !== undefined) {
-          this.allNodes[allConnectedNodes[i]].label =
-            this.allNodes[allConnectedNodes[i]].hiddenLabel;
-          this.allNodes[allConnectedNodes[i]].hiddenLabel = undefined;
-        }
-      }
+      const connectedNodes = this.network.getConnectedNodes(selectedNode, 'to') as IdType[];
 
       // all first degree nodes get their own color and their label back
-      for (i = 0; i < connectedNodes.length; i++) {
-        if (isIdType(connectedNodes[i])) {
-          this.allNodes[connectedNodes[i] as IdType].color = '#D2E5FF';
-          if (this.allNodes[connectedNodes[i] as IdType].hiddenLabel !== undefined) {
-            this.allNodes[connectedNodes[i] as IdType].label =
-              this.allNodes[connectedNodes[i] as IdType].hiddenLabel;
-            this.allNodes[connectedNodes[i] as IdType].hiddenLabel = undefined;
+      for (const connectedNode of connectedNodes) {
+        if (allNodes[connectedNode].hiddenLabel && allNodes[connectedNode].hiddenGroup) {
+          allNodes[connectedNode] = {
+            ...allNodes[connectedNode],
+            group: allNodes[connectedNode].hiddenGroup,
+            label: allNodes[connectedNode].hiddenLabel,
+            hiddenLabel: undefined,
+            hiddenGroup: undefined
+          };
+
+          for (const connectedEdge of this.network.getConnectedEdges(connectedNode)) {
+            if (allEdges[connectedEdge].from === connectedNode) {
+              this.edgesDataset.updateOnly({ id: connectedEdge, color: '#eaeff5' });
+            }
           }
         }
       }
 
       // the main node gets its own color and its label back.
-      this.allNodes[selectedNode].color = '#D2E5FF';
-      if (this.allNodes[selectedNode].hiddenLabel !== undefined) {
-        this.allNodes[selectedNode].label = this.allNodes[selectedNode].hiddenLabel;
-        this.allNodes[selectedNode].hiddenLabel = undefined;
+      if (allNodes[selectedNode].hiddenLabel && allNodes[selectedNode].hiddenGroup) {
+        allNodes[selectedNode] = {
+          ...allNodes[selectedNode],
+          group: allNodes[selectedNode].hiddenGroup,
+          label: allNodes[selectedNode].hiddenLabel,
+          hiddenLabel: undefined,
+          hiddenGroup: undefined
+        };
       }
     } else if (this.highlightActive === true) {
       // reset all nodes
-      // eslint-disable-next-line guard-for-in
-      for (const nodeId in this.allNodes) {
-        this.allNodes[nodeId].color = '#D2E5FF';
-        if (this.allNodes[nodeId].hiddenLabel !== undefined) {
-          this.allNodes[nodeId].label = this.allNodes[nodeId].hiddenLabel;
-          this.allNodes[nodeId].hiddenLabel = undefined;
+      for (const nodeId in allNodes) {
+        if (allNodes[nodeId].hiddenLabel && allNodes[nodeId].hiddenGroup) {
+          allNodes[nodeId] = {
+            ...allNodes[nodeId],
+            group: allNodes[nodeId].hiddenGroup,
+            label: allNodes[nodeId].hiddenLabel,
+            hiddenLabel: undefined,
+            hiddenGroup: undefined
+          };
         }
       }
-      this.highlightActive = false;
-    }
-
-    // transform the object into an array
-    const updateArray = [];
-    for (const nodeId in this.allNodes) {
-      if (this.allNodes.hasOwnProperty(nodeId)) {
-        updateArray.push(this.allNodes[nodeId]);
+      // eslint-disable-next-line guard-for-in
+      for (const edgeId in allEdges) {
+        allEdges[edgeId] = {
+          ...allEdges[edgeId],
+          color: { inherit: 'to' }
+        };
       }
+      this.highlightActive = false;
+      this.edgesDataset.update(Object.values(allEdges));
     }
-    this.nodesDataset.update(updateArray);
 
-    function isIdType(value: IdType | { fromId: IdType; toId: IdType }): value is IdType {
-      return typeof value === 'string' || typeof value === 'number';
-
-    }
+    this.nodesDataset.update(Object.values(allNodes));
   }
 }

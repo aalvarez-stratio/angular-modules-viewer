@@ -7,8 +7,8 @@ import { NgxElectronModule } from 'ngx-electron';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { FormBehaviorModule } from '@circe/form-behavior';
-import { SpinnerModule } from '@circe/spinner';
+import { FormBehaviorModule } from '@stratiods/form-behavior';
+import { SpinnerModule } from '@stratiods/spinner';
 
 @NgModule({
   declarations: [HomeComponent],

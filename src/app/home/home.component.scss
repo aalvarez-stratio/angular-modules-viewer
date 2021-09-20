@@ -9,19 +9,59 @@
 
     .graph-manager__header {
       box-sizing: border-box;
-      height: 70px;
       width: 100%;
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 var(--npa-spacing-16);
+      flex-direction: column;
+      padding: var(--npa-spacing-24) var(--npa-spacing-16) var(--npa-spacing-16);
 
       --npa-component-width: 400px;
+
+      .graph-manager__header-main {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: var(--npa-spacing-16);
+      }
+
+      .graph-manager__header-aggregations {
+        height: 30px;
+        display: flex;
+
+        .npa-tag:not(:last-child) {
+          margin-right: var(--npa-spacing-8);
+        }
+
+        .npa-tag--module {
+          --npa-tag-border-color: var(--npa-color-action-1);
+          --npa-tag-background-color: var(--npa-color-action-1);
+          --npa-tag-text-color: var(--npa-color-action-8);
+        }
+        .npa-tag--component {
+          --npa-tag-border-color: var(--npa-color-green-1);
+          --npa-tag-background-color: var(--npa-color-green-1);
+          --npa-tag-text-color: var(--npa-color-green-8);
+        }
+        .npa-tag--service {
+          --npa-tag-border-color: var(--npa-color-orange-1);
+          --npa-tag-background-color: var(--npa-color-orange-1);
+          --npa-tag-text-color: var(--npa-color-orange-8);
+        }
+        .npa-tag--directive {
+          --npa-tag-border-color: var(--npa-color-purple-1);
+          --npa-tag-background-color: var(--npa-color-purple-1);
+          --npa-tag-text-color: var(--npa-color-purple-8);
+        }
+        .npa-tag--pipe {
+          --npa-tag-border-color: var(--npa-color-coral-1);
+          --npa-tag-background-color: var(--npa-color-coral-1);
+          --npa-tag-text-color: var(--npa-color-coral-8);
+        }
+      }
     }
 
     .graph-manager__graph-container {
       width: 100%;
-      height: calc(100% - 70px);
+      height: calc(100% - 122px);
 
       npa-spinner, .graph-manager__graph {
         display: flex;

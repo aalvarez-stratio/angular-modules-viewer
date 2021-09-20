@@ -29,30 +29,37 @@ export default class TypescriptParserResults {
     }
   }
 
-  addNode(nodeId: string): void {
+  addNodes(nodeIds: string[], group: string = 'module'): void {
+    for (const _nodeId of nodeIds) {
+      this.addNode(_nodeId, group);
+    }
+  }
+
+  addNode(nodeId: string, group: string = 'module'): void {
     if (this._nodes.every(n => n.id !== nodeId)) {
       this._nodes.push({
         id: nodeId,
         label: nodeId,
-        shape: 'box',
-        margin: { bottom: 15, top: 15, left: 15, right: 15 }
+        group
       });
     }
   }
 
-  addEdge(from: string, to: string): void {
+  addEdge(from: string, to: string, type: string = 'default'): void {
     if (this._edges.every(e => e.from !== from || e.to !== to)) {
       this._edges.push({
         from,
         to,
-        arrows: 'to'
+        dashes: type === 'lazyLoad',
+        arrows: 'to',
+        color: { inherit: 'to' }
       });
     }
   }
 
-  addEdges(fromNodeName: string, toNodeNames: string[]): void {
+  addEdgesToNode(fromNodeName: string, toNodeNames: string[], edgeType: string = 'default'): void {
     for (const toNodeName of toNodeNames) {
-      this.addEdge(fromNodeName, toNodeName);
+      this.addEdge(fromNodeName, toNodeName, edgeType);
     }
   }
 }
