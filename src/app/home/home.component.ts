@@ -1,11 +1,16 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { ElectronService } from 'ngx-electron';
 import * as vis from 'vis-network';
-import { DataSet } from 'vis-data';
 import { IdType, Options } from 'vis-network';
+import { DataSet } from 'vis-data';
 import { FormControl } from '@angular/forms';
 import { BehaviorSubject, Subject } from 'rxjs';
+import { ModalConfig } from '@stratiods/modal';
+import { NpaOption } from '@stratiods/core';
+import { distinctUntilChanged, takeUntil, tap, withLatestFrom } from 'rxjs/operators';
+import { NpaDropdownConfig } from '@stratiods/dropdown';
+import { ITypescriptParserResults } from '../../../app/typescript-parser/typescript-parser-results';
+import fs from 'fs';
 
 export interface IAngularMetadataAggregations {
   module: number;
@@ -18,29 +23,64 @@ export interface IAngularMetadataAggregations {
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.scss']
+  styleUrls: ['./home.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class HomeComponent {
+export class HomeComponent implements OnDestroy {
 
+  public searchControl: FormControl;
   public urlControl: FormControl;
+  public loadProjectModalConfig: ModalConfig;
+  public dropdownConfig: NpaDropdownConfig;
   public loadingGraph$: Subject<boolean> = new Subject<boolean>();
+  public showLoadProjectModal$: Subject<boolean> = new Subject<boolean>();
+  public showSearchOptions$: Subject<boolean> = new Subject<boolean>();
+  public showGraphControls$: Subject<boolean> = new Subject<boolean>();
+  public dropdownKeyboardEvents$: Subject<KeyboardEvent> = new Subject();
+  public searchOptions$: BehaviorSubject<NpaOption[]> = new BehaviorSubject<NpaOption[]>([]);
   public graphAggregations$: BehaviorSubject<IAngularMetadataAggregations> = new BehaviorSubject<IAngularMetadataAggregations>(null);
 
-  private network: vis.Network;
-  private nodesDataset: DataSet<vis.Node>;
-  private edgesDataset: DataSet<vis.Edge>;
-  private highlightActive = false;
+  private _network: vis.Network;
+  private _nodesDataset: DataSet<vis.Node>;
+  private _edgesDataset: DataSet<vis.Edge>;
+  private _highlightActive: boolean = false;
+  private _canFilterByEnter: boolean = false;
+  private _componentDestroyed$: Subject<void> = new Subject<void>();
 
-  constructor(private cd: ChangeDetectorRef, private electron: ElectronService) {
+  constructor(private _cd: ChangeDetectorRef, private _electron: ElectronService) {
+    this.searchControl = new FormControl('');
     this.urlControl = new FormControl('/home/aalvarez/Proyectos/governance-ui');
+    this.loadProjectModalConfig = {
+      type: 'custom',
+      onlyActionButton: true
+    };
+    this.dropdownConfig = {
+      elementRelative: 'graph-manager',
+      elementReference: { name: 'search', type: 'id' },
+      clickOutsideApply: true,
+      width: 'trigger'
+    };
+
+    this.searchControl.valueChanges
+      .pipe(
+        distinctUntilChanged(),
+        takeUntil(this._componentDestroyed$)
+      )
+      .subscribe((search: string,) => {
+        if (search) {
+          this._getAutocomplete(search);
+        } else {
+          this.showSearchOptions$.next(false);
+        }
+      });
   }
 
   public requestResults(): void {
-    this.electron.ipcRenderer.on('results', (event, _results) => {
+    this._electron.ipcRenderer.once('results', (event, _results) => {
       const container = document.getElementById('graph');
-      this.nodesDataset = new DataSet(_results.nodes);
-      this.edgesDataset = new DataSet(_results.edges);
-      const data = { nodes: this.nodesDataset, edges: this.edgesDataset };
+      this._nodesDataset = new DataSet(_results.nodes);
+      this._edgesDataset = new DataSet(_results.edges);
+      const data = { nodes: this._nodesDataset, edges: this._edgesDataset };
       const options: Options = {
         groups: {
           module: {
@@ -100,36 +140,71 @@ export class HomeComponent {
             levelSeparation: 450
           },
         },
-        physics: {
-          hierarchicalRepulsion: {
-            avoidOverlap: 50,
-          },
-        }
+        physics: { enabled: false }
       };
-      this.network = new vis.Network(container, data, options);
-      this.network.setOptions({ physics: false });
+      this._network = new vis.Network(container, data, options);
+      this._network.setOptions({ layout: { hierarchical: { enabled: false } } });
 
-      this.network.on('click', this.neighbourhoodHighlight.bind(this));
+      this._network.on('click', this.neighbourhoodHighlight.bind(this));
       this.loadingGraph$.next(false);
+      this.showGraphControls$.next(true);
       this.graphAggregations$.next({
-        module: this.nodesDataset.get({ filter: (item) => item.group === 'module' }).length,
-        component: this.nodesDataset.get({ filter: (item) => item.group === 'component' }).length,
-        service: this.nodesDataset.get({ filter: (item) => item.group === 'service' }).length,
-        directive: this.nodesDataset.get({ filter: (item) => item.group === 'directive' }).length,
-        pipe: this.nodesDataset.get({ filter: (item) => item.group === 'pipe' }).length,
+        module: this._nodesDataset.get({ filter: (item) => item.group === 'module' }).length,
+        component: this._nodesDataset.get({ filter: (item) => item.group === 'component' }).length,
+        service: this._nodesDataset.get({ filter: (item) => item.group === 'service' }).length,
+        directive: this._nodesDataset.get({ filter: (item) => item.group === 'directive' }).length,
+        pipe: this._nodesDataset.get({ filter: (item) => item.group === 'pipe' }).length,
       });
-      this.cd.detectChanges();
+      this._cd.detectChanges();
+      setTimeout(() => {
+        this._network.focus('AppModule', { scale: 0.7, animation: true });
+      });
     });
+    this.searchControl.setValue('');
+    this.showLoadProjectModal$.next(false);
+    this.showGraphControls$.next(false);
     this.loadingGraph$.next(true);
-    this.electron.ipcRenderer.send('requestResults', this.urlControl.value);
+    this._electron.ipcRenderer.send('requestResults', this.urlControl.value);
+  }
+
+  public onKeyboardEmit(event: KeyboardEvent): void {
+    this.dropdownKeyboardEvents$.next(event);
+
+    if (this._canFilterByEnter && event.key === 'Enter') {
+      this.processSearchValue(this.searchControl.value);
+      this.showSearchOptions$.next(false);
+    }
+  }
+
+  public processSearchValue(search: string): void {
+    const _results: vis.Node[] = this._nodesDataset.get({
+      filter: (node: vis.Node) => String(node.id).toLowerCase().includes(search.toLowerCase())
+    });
+    if (_results.length) {
+      if (_results.length === 1) {
+        this._network.focus(_results.pop().id, { scale: 0.7, animation: true });
+      } else {
+        this._nodesDataset.update(this._nodesDataset.get().map((node: vis.Node) => ({
+          ...node,
+          hidden: _results.every((r: vis.Node) => r.id !== node.id)
+        })));
+      }
+    }
+
+  }
+
+  public ngOnDestroy(): void {
+    this._componentDestroyed$.next();
+    this._componentDestroyed$.complete();
+    this._componentDestroyed$.unsubscribe();
   }
 
   private neighbourhoodHighlight(params) {
-    const allNodes = this.nodesDataset.get({ returnType: 'Object' }) as any;
-    const allEdges = this.edgesDataset.get({ returnType: 'Object' }) as any;
+    const allNodes = this._nodesDataset.get({ returnType: 'Object' }) as any;
+    const allEdges = this._edgesDataset.get({ returnType: 'Object' }) as any;
     // if something is selected:
     if (params.nodes.length > 0) {
-      this.highlightActive = true;
+      this._highlightActive = true;
       const selectedNode = params.nodes[0];
       const degrees = 1;
 
@@ -146,7 +221,7 @@ export class HomeComponent {
           };
         }
       }
-      const connectedNodes = this.network.getConnectedNodes(selectedNode, 'to') as IdType[];
+      const connectedNodes = this._network.getConnectedNodes(selectedNode, 'to') as IdType[];
 
       // all first degree nodes get their own color and their label back
       for (const connectedNode of connectedNodes) {
@@ -159,9 +234,9 @@ export class HomeComponent {
             hiddenGroup: undefined
           };
 
-          for (const connectedEdge of this.network.getConnectedEdges(connectedNode)) {
+          for (const connectedEdge of this._network.getConnectedEdges(connectedNode)) {
             if (allEdges[connectedEdge].from === connectedNode) {
-              this.edgesDataset.updateOnly({ id: connectedEdge, color: '#eaeff5' });
+              this._edgesDataset.updateOnly({ id: connectedEdge, color: '#eaeff5' });
             }
           }
         }
@@ -177,7 +252,7 @@ export class HomeComponent {
           hiddenGroup: undefined
         };
       }
-    } else if (this.highlightActive === true) {
+    } else if (this._highlightActive === true) {
       // reset all nodes
       for (const nodeId in allNodes) {
         if (allNodes[nodeId].hiddenLabel && allNodes[nodeId].hiddenGroup) {
@@ -197,10 +272,41 @@ export class HomeComponent {
           color: { inherit: 'to' }
         };
       }
-      this.highlightActive = false;
-      this.edgesDataset.update(Object.values(allEdges));
+      this._highlightActive = false;
+      this._edgesDataset.update(Object.values(allEdges));
     }
 
-    this.nodesDataset.update(Object.values(allNodes));
+    this._nodesDataset.update(Object.values(allNodes));
+  }
+
+  private _getAutocomplete(filter: string): void {
+    const _filter: string = String(filter).trim();
+    const _results: string[] = this._nodesDataset.get({
+      filter: (node: vis.Node) => String(node.id).toLowerCase().includes(_filter.toLowerCase())
+    }).map((node: vis.Node) => String(node.id));
+
+    if (_filter?.length > 2) {
+      if (_results.length) {
+        this.searchOptions$.next(_results.slice(0, 10).map((r: string) => ({ label: r, value: r })));
+        this._canFilterByEnter = true;
+      } else {
+        this.searchOptions$.next([{
+          label: 'No results match.',
+          value: '',
+          unselectable: true,
+          color: 'npa-color--space-6'
+        }]);
+        this._canFilterByEnter = false;
+      }
+    } else {
+      this.searchOptions$.next([{
+        label: 'Please, write at least 3 character.',
+        value: '',
+        unselectable: true,
+        color: 'npa-color--space-6'
+      }]);
+      this._canFilterByEnter = false;
+    }
+    this.showSearchOptions$.next(true);
   }
 }

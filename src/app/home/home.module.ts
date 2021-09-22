@@ -9,6 +9,9 @@ import { TranslateModule } from '@ngx-translate/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FormBehaviorModule } from '@stratiods/form-behavior';
 import { SpinnerModule } from '@stratiods/spinner';
+import { ModalModule } from '@stratiods/modal';
+import { DropdownModule } from '@stratiods/dropdown';
+import { KeyboardEmitterModule } from '@stratiods/event-controls';
 
 @NgModule({
   declarations: [HomeComponent],
@@ -20,7 +23,11 @@ import { SpinnerModule } from '@stratiods/spinner';
     NgxElectronModule,
     FormBehaviorModule,
     ReactiveFormsModule,
-    SpinnerModule
+    SpinnerModule,
+    ModalModule,
+    DropdownModule,
+    KeyboardEmitterModule
   ]
 })
-export class HomeModule {}
+export class HomeModule {
+}

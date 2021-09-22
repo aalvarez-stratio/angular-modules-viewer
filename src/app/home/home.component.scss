@@ -1,3 +1,5 @@
+@use '~@stratiods/space-dark/mixins' as npa;
+
 :host {
   display: block;
   width: 100%;
@@ -6,12 +8,12 @@
   .graph-manager {
     width: 100%;
     height: 100%;
+    position: relative;
 
     .graph-manager__header {
+      @include npa.createFlexBox(column, normal, normal, nowrap);
       box-sizing: border-box;
       width: 100%;
-      display: flex;
-      flex-direction: column;
       padding: var(--npa-spacing-24) var(--npa-spacing-16) var(--npa-spacing-16);
 
       --npa-component-width: 400px;
@@ -32,29 +34,29 @@
         }
 
         .npa-tag--module {
-          --npa-tag-border-color: var(--npa-color-action-1);
-          --npa-tag-background-color: var(--npa-color-action-1);
-          --npa-tag-text-color: var(--npa-color-action-8);
+          --npa-tag-border-color: var(--npa-color-action-6);
+          --npa-tag-background-color: transparent;
+          --npa-tag-text-color: var(--npa-color-action-6);
         }
         .npa-tag--component {
-          --npa-tag-border-color: var(--npa-color-green-1);
-          --npa-tag-background-color: var(--npa-color-green-1);
-          --npa-tag-text-color: var(--npa-color-green-8);
+          --npa-tag-border-color: var(--npa-color-green-6);
+          --npa-tag-background-color: transparent;
+          --npa-tag-text-color: var(--npa-color-green-6);
         }
         .npa-tag--service {
-          --npa-tag-border-color: var(--npa-color-orange-1);
-          --npa-tag-background-color: var(--npa-color-orange-1);
-          --npa-tag-text-color: var(--npa-color-orange-8);
+          --npa-tag-border-color: var(--npa-color-orange-6);
+          --npa-tag-background-color: transparent;
+          --npa-tag-text-color: var(--npa-color-orange-6);
         }
         .npa-tag--directive {
-          --npa-tag-border-color: var(--npa-color-purple-1);
-          --npa-tag-background-color: var(--npa-color-purple-1);
-          --npa-tag-text-color: var(--npa-color-purple-8);
+          --npa-tag-border-color: var(--npa-color-purple-6);
+          --npa-tag-background-color: transparent;
+          --npa-tag-text-color: var(--npa-color-purple-6);
         }
         .npa-tag--pipe {
-          --npa-tag-border-color: var(--npa-color-coral-1);
-          --npa-tag-background-color: var(--npa-color-coral-1);
-          --npa-tag-text-color: var(--npa-color-coral-8);
+          --npa-tag-border-color: var(--npa-color-coral-6);
+          --npa-tag-background-color: transparent;
+          --npa-tag-text-color: var(--npa-color-coral-6);
         }
       }
     }
@@ -75,6 +77,17 @@
         display: none;
         position: absolute;
       }
+    }
+  }
+
+  .set-project-modal {
+    --npa-component-width: 100%;
+    @include npa.createFlexBox(column, normal, space-between, nowrap);
+    height: 100%;
+
+    .set-project-modal__button-container {
+      @include npa.createFlexBox(row, normal, flex-end, nowrap);
+      margin-top: var(--npa-spacing-48);
     }
   }
 }
