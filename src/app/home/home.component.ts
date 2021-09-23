@@ -78,7 +78,7 @@ export class HomeComponent implements OnDestroy {
   public requestResults(): void {
     this._electron.ipcRenderer.once('results', (event, _results) => {
       const container = document.getElementById('graph');
-      this._nodesDataset = new DataSet(_results.nodes);
+      this._nodesDataset = new DataSet(_results.nodes.filter(n => n.group !== 'component'));
       this._edgesDataset = new DataSet(_results.edges);
       const data = { nodes: this._nodesDataset, edges: this._edgesDataset };
       const options: Options = {
@@ -130,20 +130,21 @@ export class HomeComponent implements OnDestroy {
             }
           }
         },
+        physics: {
+          enabled: false
+        },
         layout: {
           hierarchical: {
             direction: 'UD',
             sortMethod: 'directed',
-            shakeTowards: 'roots',
-            blockShifting: false,
+            shakeTowards: 'leaves',
             nodeSpacing: 300,
             levelSeparation: 450
-          },
-        },
-        physics: { enabled: false }
+          }
+        }
       };
       this._network = new vis.Network(container, data, options);
-      this._network.setOptions({ layout: { hierarchical: { enabled: false } } });
+      // this._network.setOptions({ layout: { hierarchical: { enabled: false } } });
 
       this._network.on('click', this.neighbourhoodHighlight.bind(this));
       this.loadingGraph$.next(false);
@@ -157,6 +158,7 @@ export class HomeComponent implements OnDestroy {
       });
       this._cd.detectChanges();
       setTimeout(() => {
+        this._network.stabilize(10);
         this._network.focus('AppModule', { scale: 0.7, animation: true });
       });
     });
@@ -206,7 +208,6 @@ export class HomeComponent implements OnDestroy {
     if (params.nodes.length > 0) {
       this._highlightActive = true;
       const selectedNode = params.nodes[0];
-      const degrees = 1;
 
       // mark all nodes as hard to read.
       // eslint-disable-next-line guard-for-in
@@ -217,6 +218,7 @@ export class HomeComponent implements OnDestroy {
             group: 'hidden',
             hiddenGroup: allNodes[nodeId].group,
             hiddenLabel: allNodes[nodeId].label,
+            opacity: 0.2,
             label: undefined
           };
         }
@@ -230,13 +232,18 @@ export class HomeComponent implements OnDestroy {
             ...allNodes[connectedNode],
             group: allNodes[connectedNode].hiddenGroup,
             label: allNodes[connectedNode].hiddenLabel,
+            opacity: 1,
             hiddenLabel: undefined,
             hiddenGroup: undefined
           };
 
           for (const connectedEdge of this._network.getConnectedEdges(connectedNode)) {
-            if (allEdges[connectedEdge].from === connectedNode) {
-              this._edgesDataset.updateOnly({ id: connectedEdge, color: '#eaeff5' });
+            if (allEdges[connectedEdge].from === selectedNode) {
+              allEdges[connectedEdge].color = { inherit: true };
+              allEdges[connectedEdge].opacity = 1;
+            } else {
+              allEdges[connectedEdge].color = '#eaeff5';
+              allEdges[connectedEdge].opacity = 0.2;
             }
           }
         }
@@ -248,6 +255,7 @@ export class HomeComponent implements OnDestroy {
           ...allNodes[selectedNode],
           group: allNodes[selectedNode].hiddenGroup,
           label: allNodes[selectedNode].hiddenLabel,
+          opacity: 1,
           hiddenLabel: undefined,
           hiddenGroup: undefined
         };
@@ -260,6 +268,7 @@ export class HomeComponent implements OnDestroy {
             ...allNodes[nodeId],
             group: allNodes[nodeId].hiddenGroup,
             label: allNodes[nodeId].hiddenLabel,
+            opacity: 1,
             hiddenLabel: undefined,
             hiddenGroup: undefined
           };
@@ -269,13 +278,13 @@ export class HomeComponent implements OnDestroy {
       for (const edgeId in allEdges) {
         allEdges[edgeId] = {
           ...allEdges[edgeId],
+          opacity: 1,
           color: { inherit: 'to' }
         };
       }
       this._highlightActive = false;
-      this._edgesDataset.update(Object.values(allEdges));
     }
-
+    this._edgesDataset.update(Object.values(allEdges));
     this._nodesDataset.update(Object.values(allNodes));
   }
 

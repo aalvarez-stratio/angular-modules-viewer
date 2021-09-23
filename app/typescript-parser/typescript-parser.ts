@@ -30,9 +30,11 @@ export default class TypescriptParser {
 
   readFiles(path: string): Promise<TypescriptParserResults> {
     return new Promise<TypescriptParserResults>((resolve) => {
-      const project = new Project({
-        tsConfigFilePath: path + '/tsconfig.json'
-      });
+      // const project = new Project({
+      //   tsConfigFilePath: path + '/tsconfig.json'
+      // });
+      const project = new Project();
+      project.addSourceFilesFromTsConfig(path + '/tsconfig.json');
       for (const _sourceFile of project.getSourceFiles()) {
 
         this._searchClasses(_sourceFile);
@@ -81,7 +83,7 @@ export default class TypescriptParser {
     for (const _variableStatement of sourceFile.getVariableStatements()) {
       for (const _variableDeclaration of _variableStatement.getDeclarations()) {
         try {
-          if (_variableDeclaration.getType()?.getAliasSymbol()?.getName() === 'Routes') {
+          if (_variableDeclaration.getType()?.getAliasSymbol()?.getName() === 'Routes' || _variableDeclaration.getType().getText().endsWith('Routes')) {
             for (const _variableDeclarationChildren of _variableDeclaration.getChildren()) {
               this._processRoutes(sourceFile.getClasses()[0]?.getName() ?? '', _variableDeclarationChildren)
             }
