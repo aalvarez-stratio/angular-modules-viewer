@@ -1,15 +1,22 @@
 import { Edge, Node } from 'vis-network/peer';
 
-export interface ITypescriptParserResults {
+export type AnalysisResults = {
+  projectName: string;
   nodes: Node[];
   edges: Edge[];
-}
+};
 
-export default class TypescriptParserResults {
+export type BackendAnalysisRequest = { tsConfigPath: string; packageJsonPath: string; };
+
+export type ProjectGraph = Pick<AnalysisResults, 'nodes' | 'edges'>;
+
+export class TypescriptParserResults {
+  private _projectName: string;
   private readonly _nodes: Node[];
   private readonly _edges: Edge[];
 
   constructor() {
+    this._projectName = '';
     this._nodes = [];
     this._edges = [];
   }
@@ -22,8 +29,13 @@ export default class TypescriptParserResults {
     return this._edges;
   }
 
-  getResult(): ITypescriptParserResults {
+  getProjectName(): string {
+    return this._projectName;
+  }
+
+  getResult(): AnalysisResults {
     return {
+      projectName: this.getProjectName(),
       nodes: this.getNodes(),
       edges: this.getEdges()
     }
@@ -61,5 +73,9 @@ export default class TypescriptParserResults {
     for (const toNodeName of toNodeNames) {
       this.addEdge(fromNodeName, toNodeName, edgeType);
     }
+  }
+
+  setProjectName(projectName: string): void {
+    this._projectName = projectName;
   }
 }

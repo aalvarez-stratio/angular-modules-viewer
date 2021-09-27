@@ -1,11 +1,11 @@
 {
   "name": "angular-electron",
   "version": "10.1.0",
-  "description": "Angular 12 with Electron (Typescript + SASS + Hot Reload)",
+  "description": "View your angular modules in a graph model",
   "homepage": "https://github.com/maximegris/angular-electron",
   "author": {
-    "name": "Maxime GRIS",
-    "email": "maxime.gris@gmail.com"
+    "name": "Antonio Alvarez Torres",
+    "email": ""
   },
   "keywords": [
     "angular",

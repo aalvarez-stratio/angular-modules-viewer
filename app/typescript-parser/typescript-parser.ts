@@ -1,16 +1,16 @@
-import TypescriptParserResults from './typescript-parser-results';
+import { AnalysisResults, BackendAnalysisRequest, TypescriptParserResults } from './typescript-parser-results';
 import {
   Project,
-  ArrayLiteralExpression,
   SourceFile,
   Decorator,
   Node,
-  SpreadElement,
-  PropertyAssignment
+  PropertyAssignment, getCompilerOptionsFromTsConfig
 } from 'ts-morph';
-import NgModuleMetadata from './ng-module-metadata';
+import { NgModuleMetadata } from './ng-module-metadata';
+import * as fs from 'fs';
+import { resolve } from '@angular/compiler-cli/src/ngtsc/file_system';
 
-export default class TypescriptParser {
+export class TypescriptParser {
 
   private readonly _ngModules: NgModuleMetadata[];
   private readonly _injectables: string[];
@@ -28,20 +28,41 @@ export default class TypescriptParser {
     this._results = new TypescriptParserResults();
   }
 
-  readFiles(path: string): Promise<TypescriptParserResults> {
-    return new Promise<TypescriptParserResults>((resolve) => {
-      // const project = new Project({
-      //   tsConfigFilePath: path + '/tsconfig.json'
-      // });
-      const project = new Project();
-      project.addSourceFilesFromTsConfig(path + '/tsconfig.json');
+  analyzeProject(analysisRequest: BackendAnalysisRequest): Promise<[string, AnalysisResults]> {
+    return Promise.all([
+      this._getPackageJsonData(analysisRequest),
+      this._getProjectModulesData(analysisRequest)
+    ]);
+  }
+
+  private _getPackageJsonData(analysisRequest: BackendAnalysisRequest): Promise<string> {
+    return new Promise<string>((resolve) => {
+      fs.readFile(analysisRequest.packageJsonPath, (err, data) => {
+        resolve(JSON.parse(String(data)).name ?? '');
+      })
+    });
+  }
+
+  private _getProjectModulesData(analysisRequest: BackendAnalysisRequest): Promise<AnalysisResults> {
+    return new Promise<AnalysisResults>((resolve) => {
+      const project = new Project({
+        tsConfigFilePath: analysisRequest.tsConfigPath
+      });
+
+      console.log(project);
+      console.log(project.formatDiagnosticsWithColorAndContext(project.getConfigFileParsingDiagnostics()));
+      console.log(analysisRequest);
+      console.log(analysisRequest.tsConfigPath);
+      console.log('---> Starting Modules Analysis');
       for (const _sourceFile of project.getSourceFiles()) {
 
+        console.log('\t- ' + _sourceFile.getBaseName());
         this._searchClasses(_sourceFile);
         this._searchRoutes(_sourceFile);
       }
       this._addAngularMetadataToResults();
-      resolve(this._results);
+      console.log('---> Finishing Modules Analysis');
+      resolve(this._results.getResult());
     });
   }
 

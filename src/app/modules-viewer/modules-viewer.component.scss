@@ -1,0 +1,97 @@
+@use '~@stratiods/space-dark/mixins' as npa;
+
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+
+  .graph-manager {
+    width: 100%;
+    height: 100%;
+    position: relative;
+
+    .graph-manager__header {
+      @include npa.createFlexBox(column, normal, normal, nowrap);
+      box-sizing: border-box;
+      width: 100%;
+      padding: var(--npa-spacing-24) var(--npa-spacing-16) var(--npa-spacing-16);
+
+      --npa-component-width: 400px;
+
+      .graph-manager__header-main, .graph-manager__header-controls {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: var(--npa-spacing-16);
+      }
+
+      .graph-manager__header-aggregations {
+        height: 30px;
+        display: flex;
+
+        .npa-tag:not(:last-child) {
+          margin-right: var(--npa-spacing-8);
+        }
+
+        .npa-tag--module {
+          --npa-tag-border-color: var(--npa-color-action-6);
+          --npa-tag-background-color: transparent;
+          --npa-tag-text-color: var(--npa-color-action-6);
+        }
+        .npa-tag--component {
+          --npa-tag-border-color: var(--npa-color-green-6);
+          --npa-tag-background-color: transparent;
+          --npa-tag-text-color: var(--npa-color-green-6);
+        }
+        .npa-tag--service {
+          --npa-tag-border-color: var(--npa-color-orange-6);
+          --npa-tag-background-color: transparent;
+          --npa-tag-text-color: var(--npa-color-orange-6);
+        }
+        .npa-tag--directive {
+          --npa-tag-border-color: var(--npa-color-purple-6);
+          --npa-tag-background-color: transparent;
+          --npa-tag-text-color: var(--npa-color-purple-6);
+        }
+        .npa-tag--pipe {
+          --npa-tag-border-color: var(--npa-color-coral-6);
+          --npa-tag-background-color: transparent;
+          --npa-tag-text-color: var(--npa-color-coral-6);
+        }
+      }
+    }
+
+    .graph-manager__graph-container {
+      width: 100%;
+      height: calc(100% - 165px);
+
+      npa-spinner, .graph-manager__graph {
+        display: flex;
+        width: 100%;
+        height: calc(100% - 1px); // Workaround for spinner svg rotation.
+      }
+
+      .graph-manager__graph--hide {
+        width: 0;
+        height: 0;
+        display: none;
+        position: absolute;
+      }
+    }
+  }
+
+  .set-project-modal {
+    --npa-component-width: 100%;
+    @include npa.createFlexBox(column, normal, space-between, nowrap);
+    height: 100%;
+
+    .set-project-modal__path-control:not(:last-child) {
+      margin-bottom: var(--npa-spacing-16);
+    }
+
+    .set-project-modal__button-container {
+      @include npa.createFlexBox(row, normal, flex-end, nowrap);
+      margin-top: var(--npa-spacing-48);
+    }
+  }
+}

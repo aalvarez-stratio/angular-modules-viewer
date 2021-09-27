@@ -1,32 +1,20 @@
 import { NgModule } from '@angular/core';
 
-import { HomeRoutingModule } from './home-routing.module';
-
 import { HomeComponent } from './home.component';
-import { NgxElectronModule } from 'ngx-electron';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { FormBehaviorModule } from '@stratiods/form-behavior';
-import { SpinnerModule } from '@stratiods/spinner';
-import { ModalModule } from '@stratiods/modal';
+import { ReactiveFormsModule } from '@angular/forms';
 import { DropdownModule } from '@stratiods/dropdown';
 import { KeyboardEmitterModule } from '@stratiods/event-controls';
+import { FormBehaviorModule } from '@stratiods/form-behavior';
 
 @NgModule({
   declarations: [HomeComponent],
   imports: [
     CommonModule,
-    TranslateModule,
-    FormsModule,
-    HomeRoutingModule,
-    NgxElectronModule,
-    FormBehaviorModule,
     ReactiveFormsModule,
-    SpinnerModule,
-    ModalModule,
     DropdownModule,
-    KeyboardEmitterModule
+    KeyboardEmitterModule,
+    FormBehaviorModule
   ]
 })
 export class HomeModule {

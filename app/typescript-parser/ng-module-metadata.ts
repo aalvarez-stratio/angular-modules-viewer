@@ -1,6 +1,6 @@
 import { Decorator, Node } from 'ts-morph';
 
-export default class NgModuleMetadata {
+export class NgModuleMetadata {
 
   public readonly name: string;
 
