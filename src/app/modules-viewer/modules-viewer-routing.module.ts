@@ -4,7 +4,7 @@ import { ModulesViewerComponent } from './modules-viewer.component';
 
 const routes: Routes = [
   {
-    path: 'modules-viewer',
+    path: '',
     component: ModulesViewerComponent
   }
 ];

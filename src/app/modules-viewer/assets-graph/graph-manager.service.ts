@@ -1,17 +1,21 @@
 import * as vis from 'vis-network';
 import { DataSet } from 'vis-data';
-import { graphOptions } from './graph-options';
+import { graphOptions } from '../../shared/configurations/graph-options';
 import { IdType } from 'vis-network';
+import { Injectable } from '@angular/core';
 
-export default class GraphManager {
+@Injectable()
+export default class GraphManagerService {
 
-  private readonly _network: vis.Network;
-  private readonly _nodes: DataSet<vis.Node>;
-  private readonly _edges: DataSet<vis.Edge>;
+  private _network: vis.Network;
+  private _nodes: DataSet<vis.Node>;
+  private _edges: DataSet<vis.Edge>;
 
   private _isPathHighlighted: boolean = false;
 
-  constructor(nodes: vis.Node[], edges: vis.Edge[], container: HTMLElement) {
+  constructor() {}
+
+  public setGraph(nodes: vis.Node[], edges: vis.Edge[], container: HTMLElement) {
     this._nodes = new DataSet(nodes);
     this._edges = new DataSet(edges);
     const data = { nodes: this._nodes, edges: this._edges };
@@ -19,6 +23,7 @@ export default class GraphManager {
     this._network.on('click', this.neighbourhoodHighlight.bind(this));
 
     setTimeout(() => {
+      // this._network.stabilize();
       this._network.focus('AppModule');
     }, 100);
   }

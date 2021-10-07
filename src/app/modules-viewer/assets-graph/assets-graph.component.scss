@@ -1,0 +1,78 @@
+@use '~@stratiods/space-dark/mixins' as npa;
+
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+
+  .assets-graph__header {
+    @include npa.createFlexBox(column, normal, normal, nowrap);
+    box-sizing: border-box;
+    width: 100%;
+    padding: var(--npa-spacing-24) var(--npa-spacing-24) 0;
+    margin-bottom: var(--npa-spacing-16);
+
+    --npa-component-width: 400px;
+
+    .assets-graph__header-main, .assets-graph__header-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .assets-graph__header-aggregations {
+      height: 30px;
+      display: flex;
+
+      .npa-tag:not(:last-child) {
+        margin-right: var(--npa-spacing-8);
+      }
+
+      .npa-tag--module {
+        --npa-tag-border-color: var(--npa-color-action-6);
+        --npa-tag-background-color: transparent;
+        --npa-tag-text-color: var(--npa-color-action-6);
+      }
+      .npa-tag--component {
+        --npa-tag-border-color: var(--npa-color-green-6);
+        --npa-tag-background-color: transparent;
+        --npa-tag-text-color: var(--npa-color-green-6);
+      }
+      .npa-tag--service {
+        --npa-tag-border-color: var(--npa-color-orange-6);
+        --npa-tag-background-color: transparent;
+        --npa-tag-text-color: var(--npa-color-orange-6);
+      }
+      .npa-tag--directive {
+        --npa-tag-border-color: var(--npa-color-purple-6);
+        --npa-tag-background-color: transparent;
+        --npa-tag-text-color: var(--npa-color-purple-6);
+      }
+      .npa-tag--pipe {
+        --npa-tag-border-color: var(--npa-color-coral-6);
+        --npa-tag-background-color: transparent;
+        --npa-tag-text-color: var(--npa-color-coral-6);
+      }
+    }
+  }
+
+  .assets-graph__graph-container {
+    box-sizing: border-box;
+    width: 100%;
+    height: calc(100% - 92px);
+    padding: 0 var(--npa-spacing-24) var(--npa-spacing-24);
+
+    npa-spinner, .assets-graph__graph {
+      display: flex;
+      width: 100%;
+      height: calc(100% - 1px); // Workaround for spinner svg rotation.
+    }
+
+    .assets-graph__graph--hide {
+      width: 0;
+      height: 0;
+      display: none;
+      position: absolute;
+    }
+  }
+}

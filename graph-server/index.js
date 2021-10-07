@@ -19,8 +19,7 @@ app.post('/analyze-project', (req, res) => {
       .then(([projectName, results]) => {
         res.send({
           projectName,
-          nodes: results.nodes,
-          edges: results.edges
+          ...results
         });
       });
   } else {

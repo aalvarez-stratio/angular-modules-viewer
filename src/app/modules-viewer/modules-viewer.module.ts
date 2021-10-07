@@ -6,9 +6,13 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgxElectronModule } from 'ngx-electron';
 import { FormBehaviorModule } from '@stratiods/form-behavior';
 import { SpinnerModule } from '@stratiods/spinner';
+import { TabModule } from '@stratiods/tab';
 import { ModalModule } from '@stratiods/modal';
 import { DropdownModule } from '@stratiods/dropdown';
 import { KeyboardEmitterModule } from '@stratiods/event-controls';
+import { ModulesViewerRoutingModule } from './modules-viewer-routing.module';
+import { AssetsGraphModule } from './assets-graph/assets-graph.module';
+import { ModulesViewerOverviewModule } from './modules-viewer-overview/modules-viewer-overview.module';
 
 
 
@@ -26,7 +30,11 @@ import { KeyboardEmitterModule } from '@stratiods/event-controls';
     SpinnerModule,
     ModalModule,
     DropdownModule,
-    KeyboardEmitterModule
+    KeyboardEmitterModule,
+    TabModule,
+    ModulesViewerRoutingModule,
+    AssetsGraphModule,
+    ModulesViewerOverviewModule
   ]
 })
 export class ModulesViewerModule { }

@@ -59,6 +59,7 @@
     "@stratiods/modal": "^1.5.3",
     "@stratiods/space-dark": "5.1.0",
     "@stratiods/spinner": "^1.5.2",
+    "@stratiods/tab": "1.5.0",
     "@stratiods/tooltip": "^1.5.1",
     "glob": "^7.1.7",
     "keycharm": "0.4.0",

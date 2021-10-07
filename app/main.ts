@@ -1,9 +1,7 @@
-import { app, BrowserWindow, ipcMain, ipcRenderer, screen } from 'electron';
+import { app, BrowserWindow, screen } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as url from 'url';
-import { TypescriptParser } from './typescript-parser/typescript-parser';
-import { AnalysisResults } from './typescript-parser/typescript-parser-results';
 import { fork } from 'child_process';
 
 require('electron-reload')(__dirname, {

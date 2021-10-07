@@ -1,22 +1,26 @@
+// @ts-nocheck
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-
-import { HomeRoutingModule } from './home/home-routing.module';
-import { ModulesViewerRoutingModule } from './modules-viewer/modules-viewer-routing.module';
 
 const routes: Routes = [
   {
     path: '',
     redirectTo: 'home',
     pathMatch: 'full'
+  },
+  {
+    path: 'home',
+    loadChildren: () => import('./home/home.module').then(m => m.HomeModule)
+  },
+  {
+    path: 'modules-viewer',
+    loadChildren: () => import('./modules-viewer/modules-viewer.module').then(m => m.ModulesViewerModule)
   }
 ];
 
 @NgModule({
   imports: [
-    RouterModule.forRoot(routes, { relativeLinkResolution: 'legacy' }),
-    HomeRoutingModule,
-    ModulesViewerRoutingModule
+    RouterModule.forRoot(routes)
   ],
   exports: [RouterModule]
 })

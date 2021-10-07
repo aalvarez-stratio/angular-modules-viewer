@@ -1,29 +1,37 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import { AnalysisResults, ProjectGraph } from '../../../../app/typescript-parser/typescript-parser-results';
 import { ProjectDataApiService } from '../api/project-data-api.service';
 import { map, takeUntil } from 'rxjs/operators';
 import { ProjectAnalysisRequest } from '../model/project-data';
+import { AnalysisResultsDTO, ApplicationGraph } from '../../../../app/typescript-parser/typescript-parser.model';
 
 
 @Injectable({ providedIn: 'root' })
 export class ProjectDataService implements OnDestroy {
 
-  public projectData$: Observable<AnalysisResults>;
+  public projectData$: Observable<AnalysisResultsDTO>;
   public projectName$: Observable<string>;
-  public projectGraph$: Observable<ProjectGraph>;
+  public projectGraph$: Observable<ApplicationGraph>;
   public loadingData$: Observable<boolean>;
 
   private _serviceIsReady: boolean = false;
-  private _projectDataSubject$: BehaviorSubject<AnalysisResults>;
+  private _projectDataSubject$: BehaviorSubject<AnalysisResultsDTO>;
   private _loadingDataSubject$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   private _componentDestroyed$: Subject<void> = new Subject<void>();
 
   constructor(private _projectDataApi: ProjectDataApiService) {
-    this._projectDataSubject$ = new BehaviorSubject<AnalysisResults>({
+    this._projectDataSubject$ = new BehaviorSubject<AnalysisResultsDTO>({
       projectName: '',
-      nodes: [],
-      edges: []
+      modules: [],
+      components: [],
+      injectables: [],
+      directives: [],
+      pipes: [],
+      routes: [],
+      applicationGraph: {
+        nodes: [],
+        edges: []
+      }
     });
     this._setSelectors();
   }
@@ -32,10 +40,10 @@ export class ProjectDataService implements OnDestroy {
     this.projectData$ = this._projectDataSubject$.asObservable().pipe(takeUntil(this._componentDestroyed$));
     this.loadingData$ = this._loadingDataSubject$.asObservable().pipe(takeUntil(this._componentDestroyed$));
 
-    this.projectName$ = this.projectData$.pipe(map((projectData: AnalysisResults) => projectData.projectName ?? 'Unnamed Project'));
-    this.projectGraph$ = this.projectData$.pipe(map((projectData: AnalysisResults) => ({
-      nodes: projectData.nodes,
-      edges: projectData.edges
+    this.projectName$ = this.projectData$.pipe(map((projectData: AnalysisResultsDTO) => projectData.projectName ?? 'Unnamed Project'));
+    this.projectGraph$ = this.projectData$.pipe(map((projectData: AnalysisResultsDTO) => ({
+      nodes: projectData.applicationGraph.nodes,
+      edges: projectData.applicationGraph.edges
     })));
   }
 
@@ -45,7 +53,7 @@ export class ProjectDataService implements OnDestroy {
     this._projectDataApi
       .analyzeProject(analysisRequest)
       .pipe(takeUntil(this._componentDestroyed$))
-      .subscribe((analysisResults: AnalysisResults) => {
+      .subscribe((analysisResults: AnalysisResultsDTO) => {
         this._projectDataSubject$.next(analysisResults);
         console.log('FINISHED');
         this._loadingDataSubject$.next(false);

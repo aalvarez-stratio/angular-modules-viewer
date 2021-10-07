@@ -49,14 +49,23 @@ export const graphOptions: Options = {
       }
     }
   },
+  edges: {
+    length: 4000 // Longer edges between nodes.
+  },
   physics: {
-    enabled: false
+    enabled: false,
+    solver: 'hierarchicalRepulsion',
+    hierarchicalRepulsion: {
+      nodeDistance: 400,
+      avoidOverlap: 1
+    }
   },
   layout: {
     hierarchical: {
       direction: 'UD',
       sortMethod: 'directed',
       shakeTowards: 'roots',
+      parentCentralization: true,
       nodeSpacing: 300,
       levelSeparation: 450
     }

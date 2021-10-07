@@ -25,8 +25,6 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     BrowserAnimationsModule,
     FormsModule,
     HttpClientModule,
-    HomeModule,
-    ModulesViewerModule,
     AppRoutingModule,
     TranslateModule.forRoot({
       loader: {

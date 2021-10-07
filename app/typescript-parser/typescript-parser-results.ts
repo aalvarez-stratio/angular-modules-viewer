@@ -1,24 +1,17 @@
 import { Edge, Node } from 'vis-network/peer';
-
-export type AnalysisResults = {
-  projectName: string;
-  nodes: Node[];
-  edges: Edge[];
-};
-
-export type BackendAnalysisRequest = { tsConfigPath: string; packageJsonPath: string; };
-
-export type ProjectGraph = Pick<AnalysisResults, 'nodes' | 'edges'>;
+import { RoutePath } from './typescript-parser.model';
 
 export class TypescriptParserResults {
   private _projectName: string;
   private readonly _nodes: Node[];
   private readonly _edges: Edge[];
+  private readonly _routePaths: RoutePath[];
 
   constructor() {
     this._projectName = '';
     this._nodes = [];
     this._edges = [];
+    this._routePaths = [];
   }
 
   getNodes(): Node[] {
@@ -29,16 +22,12 @@ export class TypescriptParserResults {
     return this._edges;
   }
 
-  getProjectName(): string {
-    return this._projectName;
+  getRoutePaths(): RoutePath[] {
+    return this._routePaths;
   }
 
-  getResult(): AnalysisResults {
-    return {
-      projectName: this.getProjectName(),
-      nodes: this.getNodes(),
-      edges: this.getEdges()
-    }
+  getProjectName(): string {
+    return this._projectName;
   }
 
   addNodes(nodeIds: string[], group: string = 'module'): void {
@@ -72,6 +61,12 @@ export class TypescriptParserResults {
   addEdgesToNode(fromNodeName: string, toNodeNames: string[], edgeType: string = 'default'): void {
     for (const toNodeName of toNodeNames) {
       this.addEdge(fromNodeName, toNodeName, edgeType);
+    }
+  }
+
+  addRoutePath(newRoutePath: RoutePath): void {
+    if (!this._routePaths.find(routePath => routePath.path === newRoutePath.path)) {
+      this._routePaths.push(newRoutePath);
     }
   }
 
