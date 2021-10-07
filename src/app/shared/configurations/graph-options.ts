@@ -49,25 +49,16 @@ export const graphOptions: Options = {
       }
     }
   },
-  edges: {
-    length: 4000 // Longer edges between nodes.
-  },
   physics: {
-    enabled: false,
-    solver: 'hierarchicalRepulsion',
-    hierarchicalRepulsion: {
-      nodeDistance: 400,
-      avoidOverlap: 1
-    }
+    enabled: false
   },
   layout: {
     hierarchical: {
       direction: 'UD',
       sortMethod: 'directed',
       shakeTowards: 'roots',
-      parentCentralization: true,
       nodeSpacing: 300,
-      levelSeparation: 450
+      levelSeparation: 350
     }
   }
 };

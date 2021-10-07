@@ -23,10 +23,14 @@ import {
 export class TypescriptParser {
 
   private _rootModuleClassName: string = '';
+
+  // TODO: These are not results, i must rename the class name to something like VisDatasetManager or use vis.Dataset
   private readonly _results: TypescriptParserResults;
+  private readonly _routeResults: TypescriptParserResults;
 
   constructor() {
     this._results = new TypescriptParserResults();
+    this._routeResults = new TypescriptParserResults();
   }
 
   analyzeProject(analysisRequest: BackendAnalysisRequest): Promise<[string, AnalysisResultsDTO]> {
@@ -57,7 +61,7 @@ export class TypescriptParser {
         console.log('ROOT MODULE ID --> ' + _regexExec[1]);
         this._rootModuleClassName = _regexExec[1];
 
-        const _projectTree = this._buildTree(this._rootModuleClassName, project);
+        const _projectTree = this._buildTree(this._rootModuleClassName, project, '');
         fs.writeFile('treeResult.json', JSON.stringify(_projectTree), () => {
           console.log('WRITED!!!');
         });
@@ -74,11 +78,14 @@ export class TypescriptParser {
           applicationGraph: {
             nodes: [],
             edges: []
+          },
+          routesGraph: {
+            nodes: [],
+            edges: []
           }
         };
         this._traverseNgModuleTree(_projectTree, (tree: NgModuleTree | NgRouteTree) => {
           if (this._isNgModuleTree(tree)) {
-            console.log('NgModuleTree: ' + tree.moduleName);
             const _ngModule: NgModuleMetadataDTO = {
               name: tree.moduleName,
               imports: tree.imports.map(i => i.moduleName),
@@ -91,9 +98,13 @@ export class TypescriptParser {
 
             for (const _declaration of tree.declarations) {
               if (_declaration.type === 'pipe') {
-                _analysisResultsDTO.pipes.push(_declaration.name);
+                if (!_analysisResultsDTO.pipes.includes(_declaration.name)) {
+                  _analysisResultsDTO.pipes.push(_declaration.name);
+                }
               } else {
-                _analysisResultsDTO.components.push(_declaration.name);
+                if (!_analysisResultsDTO.components.includes(_declaration.name)) {
+                  _analysisResultsDTO.components.push(_declaration.name);
+                }
               }
               this._results.addNode(_declaration.name, _declaration.type);
               this._results.addEdge(_ngModule.name, _declaration.name)
@@ -111,21 +122,37 @@ export class TypescriptParser {
           }
 
           if (this._isNgRouteTree(tree)) {
-            console.log('NgRouteTree: ' + tree.path);
             const _associatedAsset: string = tree.component ?? tree.module?.moduleName;
             _analysisResultsDTO.routes.push({
               path: tree.path,
               associatedAsset: _associatedAsset,
-              fromNodeName: tree.parentRouteModule
+              fromNodeName: tree.routeModule
             });
 
-            this._results.addEdge(tree.parentRouteModule, _associatedAsset, tree.module?.moduleName ? 'lazyLoad' : 'default')
+            console.log('------------------------------')
+            console.log(tree.routeModule);
+            console.log(tree.parentModule);
+            console.log(_associatedAsset);
+
+            if (!tree.component) {
+              this._results.addEdge(tree.parentModule, tree.routeModule, 'default');
+              this._results.addEdge(tree.routeModule, _associatedAsset, tree.component ? 'default' : 'lazyLoad');
+            }
+
+            if (_associatedAsset) {
+              this._routeResults.addNode(_associatedAsset, 'module', 'path: ' + tree.path + '\ncomponent: ' + _associatedAsset);
+              this._routeResults.addNode(tree.routeModule, 'module', tree.routeModule);
+              this._routeResults.addNode(tree.parentModule, 'module', tree.parentModule);
+              this._routeResults.addEdge(tree.routeModule, _associatedAsset);
+              this._routeResults.addEdge(tree.parentModule, tree.routeModule);
+            }
           }
         });
 
         _analysisResultsDTO.applicationGraph.nodes = this._results.getNodes();
         _analysisResultsDTO.applicationGraph.edges = this._results.getEdges();
-        console.log(_analysisResultsDTO);
+        _analysisResultsDTO.routesGraph.nodes = this._routeResults.getNodes();
+        _analysisResultsDTO.routesGraph.edges = this._routeResults.getEdges();
         resolve(_analysisResultsDTO);
       }
     });
@@ -187,12 +214,12 @@ export class TypescriptParser {
     return null;
   }
 
-  private _buildTree(rootModuleName: string, project: Project): NgModuleTree {
+  private _buildTree(moduleName: string, project: Project, parentModuleName: string): NgModuleTree {
     const _tree: Partial<NgModuleTree> = {};
-    const _rootSourceFile: SourceFile = this._findSourceFileByClassName(rootModuleName, project);
+    const _rootSourceFile: SourceFile = this._findSourceFileByClassName(moduleName, project);
 
     if (_rootSourceFile) {
-      const _rootModuleClass: ClassDeclaration = this._findClassByName(rootModuleName, _rootSourceFile);
+      const _rootModuleClass: ClassDeclaration = this._findClassByName(moduleName, _rootSourceFile);
       const _rootNgModuleDecorator: Decorator = this._findNgModuleDecorator(_rootModuleClass);
 
       if (_rootNgModuleDecorator) {
@@ -204,7 +231,7 @@ export class TypescriptParser {
           exports: exportsIdentifiers
         } = _decoratorResults;
 
-        _tree.moduleName = rootModuleName;
+        _tree.moduleName = moduleName;
         _tree.declarations = declarationsIdentifiers.map(d => {
           const _declarationName: string = d.getText();
           let _declarationType: 'component' | 'pipe';
@@ -235,14 +262,14 @@ export class TypescriptParser {
                 if (Node.isVariableDeclaration(_definitionVariable)) {
                   const _routesArray: ArrayLiteralExpression = _definitionVariable.getChildren().find(c => Node.isArrayLiteralExpression(c)) as ArrayLiteralExpression;
                   if (_routesArray) {
-                    _tree.routes = this._processRoutes(rootModuleName, _routesArray, project);
+                    _tree.routes = this._processRoutes(moduleName, parentModuleName, _routesArray, project);
                   }
                 }
               }
             }
           }
 
-          const _treeResult = this._buildTree(_importIdentifier.getText(), project);
+          const _treeResult = this._buildTree(_importIdentifier.getText(), project, moduleName);
           if (Object.keys(_treeResult).length) {
             _tree.imports.push(_treeResult);
           }
@@ -284,7 +311,7 @@ export class TypescriptParser {
   }
 
   // TODO: This function needs refactor.
-  private _processRoutes(fromNodeName: string, routes: ArrayLiteralExpression, project: Project): NgRouteTree[] {
+  private _processRoutes(parentRouteModule: string, parentModule: string, routes: ArrayLiteralExpression, project: Project): NgRouteTree[] {
     let _routeTrees: NgRouteTree[] = [];
     for (const _route of routes.getElements()) {
       const _routeTree: Partial<NgRouteTree> = {};
@@ -293,20 +320,24 @@ export class TypescriptParser {
         const _children = _route.getProperty('children');
         const _component = _route.getProperty('component');
         const _path = _route.getProperty('path');
-        _routeTree.path = _path.getText();
-        _routeTree.parentRouteModule = fromNodeName;
+
+        if (Node.isPropertyAssignment(_path)) {
+          _routeTree.path = _path.getInitializer().getText();
+        }
+        _routeTree.routeModule = parentRouteModule;
+        _routeTree.parentModule = parentModule;
         if (_loadChildren || _children || _component) {
           if (_loadChildren) {
             const propertyValue = (_loadChildren as PropertyAssignment).getInitializer();
-            _routeTree.module = this._buildTree(propertyValue.getText().split('.').pop().split(')')[0], project);
+            _routeTree.module = this._buildTree(propertyValue.getText().split('.').pop().split(')')[0], project, parentRouteModule);
           }
 
           if (Node.isPropertyAssignment(_children)) {
-            _routeTree.children = this._processRoutes(fromNodeName, _children.getInitializer() as ArrayLiteralExpression, project);
+            _routeTree.children = this._processRoutes(parentRouteModule, parentModule, _children.getInitializer() as ArrayLiteralExpression, project);
           }
 
           if (Node.isPropertyAssignment(_component)) {
-            _routeTree.component = _component.getText();
+            _routeTree.component = _component.getInitializer().getText();
           }
         }
       } else if (Node.isSpreadElement(_route)) {
@@ -316,7 +347,7 @@ export class TypescriptParser {
             if (Node.isVariableDeclaration(_variableDeclaration)) {
               _routeTrees = [
                 ..._routeTrees,
-                ...this._processRoutes(fromNodeName, _variableDeclaration.getInitializer() as ArrayLiteralExpression, project)
+                ...this._processRoutes(parentRouteModule, parentModule, _variableDeclaration.getInitializer() as ArrayLiteralExpression, project)
               ];
             }
           }

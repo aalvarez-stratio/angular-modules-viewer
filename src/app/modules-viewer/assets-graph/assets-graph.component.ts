@@ -13,7 +13,7 @@ import { FormControl } from '@angular/forms';
 import { distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { BehaviorSubject, Subject } from 'rxjs';
 import * as vis from 'vis-network';
-import GraphManagerService from './graph-manager.service';
+import GraphManagerService from '../../shared/graph-manager.service';
 import { NpaDropdownConfig } from '@stratiods/dropdown';
 import { ApplicationGraph } from '../../../../app/typescript-parser/typescript-parser.model';
 
@@ -25,7 +25,6 @@ import { ApplicationGraph } from '../../../../app/typescript-parser/typescript-p
 })
 export class AssetsGraphComponent implements OnChanges, OnDestroy {
 
-  @Input() loadingData: boolean;
   @Input() applicationGraph: ApplicationGraph;
 
   public searchControl: FormControl;

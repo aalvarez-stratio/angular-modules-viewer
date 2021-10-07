@@ -5,12 +5,12 @@
   width: 100%;
   height: 100%;
 
-  .graph-manager {
+  .modules-viewer {
     width: 100%;
     height: 100%;
     position: relative;
 
-    .graph-manager__header {
+    .modules-viewer__header {
       @include npa.createFlexBox(column, normal, normal, nowrap);
       box-sizing: border-box;
       width: 100%;
@@ -18,7 +18,7 @@
 
       --npa-component-width: 400px;
 
-      .graph-manager__header-main {
+      .modules-viewer__header-main {
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -30,8 +30,18 @@
       }
     }
 
-    app-assets-graph, app-modules-viewer-overview {
+    app-modules-viewer-overview, app-assets-graph, app-routes-graph {
       height: calc(100% - 136px);
+    }
+
+    .modules-viewer__spinner-container {
+      @include npa.createFlexBox(column, center, center, nowrap);
+      height: 100%;
+      width: 100%;
+
+      SPAN {
+        margin-top: var(--npa-spacing-16);
+      }
     }
   }
 

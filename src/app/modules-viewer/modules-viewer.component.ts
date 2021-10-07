@@ -32,6 +32,7 @@ export class ModulesViewerComponent implements OnInit, OnDestroy {
   public selectedTab$: BehaviorSubject<string> = new BehaviorSubject<string>('overview');
   public showLoadProjectModal$: Subject<boolean> = new Subject<boolean>();
   public applicationGraph$: Observable<ApplicationGraph> = new Observable<ApplicationGraph>();
+  public routesGraph$: Observable<ApplicationGraph> = new Observable<ApplicationGraph>();
 
   private _componentDestroyed$: Subject<void> = new Subject<void>();
 
@@ -43,7 +44,8 @@ export class ModulesViewerComponent implements OnInit, OnDestroy {
   ) {
     this.sectionTabs = [
       { id: 'overview', text: 'Overview' },
-      { id: 'graph', text: 'Graph' }
+      { id: 'graph', text: 'Graph' },
+      { id: 'routes', text: 'Routes' }
     ];
     this.tsConfigControl = new FormControl('/home/aalvarez/Proyectos/governance-ui/tsconfig.json');
     this.packageJsonControl = new FormControl('/home/aalvarez/Proyectos/governance-ui/package.json');
@@ -56,6 +58,12 @@ export class ModulesViewerComponent implements OnInit, OnDestroy {
       .pipe(
         takeUntil(this._componentDestroyed$),
         filter((applicationGraph: ApplicationGraph) => !!applicationGraph.nodes.length && !!applicationGraph.edges.length)
+      );
+
+    this.routesGraph$ = this.projectData.routesGraph$
+      .pipe(
+        takeUntil(this._componentDestroyed$),
+        filter((routesGraph: ApplicationGraph) => !!routesGraph.nodes.length && !!routesGraph.edges.length)
       );
   }
 

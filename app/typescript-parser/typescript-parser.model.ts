@@ -8,9 +8,11 @@ export type AnalysisResultsDTO = {
   injectables: string[];
   directives: string[];
   pipes: string[];
-  applicationGraph: ApplicationGraph
+  applicationGraph: ApplicationGraph;
+  routesGraph: ApplicationGraph;
 };
 
+// TODO: Rename this to something like VisGraph or just Graph.
 export type ApplicationGraph = {
   nodes: Node[];
   edges: Edge[];
@@ -44,7 +46,8 @@ export type NgModuleTree = {
 
 export type NgRouteTree = {
   path: string;
-  parentRouteModule?: string;
+  routeModule?: string;
+  parentModule?: string;
   component?: string;
   module?: NgModuleTree;
   children?: NgRouteTree[];

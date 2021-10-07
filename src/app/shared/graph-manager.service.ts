@@ -1,6 +1,6 @@
 import * as vis from 'vis-network';
 import { DataSet } from 'vis-data';
-import { graphOptions } from '../../shared/configurations/graph-options';
+import { graphOptions } from './configurations/graph-options';
 import { IdType } from 'vis-network';
 import { Injectable } from '@angular/core';
 
@@ -24,7 +24,7 @@ export default class GraphManagerService {
 
     setTimeout(() => {
       // this._network.stabilize();
-      this._network.focus('AppModule');
+      // this._network.focus('AppModule');
     }, 100);
   }
 

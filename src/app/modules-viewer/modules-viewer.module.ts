@@ -13,6 +13,7 @@ import { KeyboardEmitterModule } from '@stratiods/event-controls';
 import { ModulesViewerRoutingModule } from './modules-viewer-routing.module';
 import { AssetsGraphModule } from './assets-graph/assets-graph.module';
 import { ModulesViewerOverviewModule } from './modules-viewer-overview/modules-viewer-overview.module';
+import { RoutesGraphModule } from './routes-graph/routes-graph.module';
 
 
 
@@ -34,7 +35,8 @@ import { ModulesViewerOverviewModule } from './modules-viewer-overview/modules-v
     TabModule,
     ModulesViewerRoutingModule,
     AssetsGraphModule,
-    ModulesViewerOverviewModule
+    ModulesViewerOverviewModule,
+    RoutesGraphModule
   ]
 })
 export class ModulesViewerModule { }

@@ -1,7 +1,8 @@
 <div>
-<!--  <p>Components per Route: {{routes.length ? (totalComponents / (routes.length)) : 'No routes found.'}}</p>-->
+  {{totalComponents}}
+  <p>Components per Route: {{routes.length ? (totalComponents / (routes.length)) : 'No routes found.'}}</p>
   <span>Total routes: {{routes.length}}</span>
-  <div>
-    <p *ngFor="let route of routes">{{route | json}}</p>
-  </div>
+<!--  <div>-->
+<!--    <p *ngFor="let route of routes">{{route | json}}</p>-->
+<!--  </div>-->
 </div>

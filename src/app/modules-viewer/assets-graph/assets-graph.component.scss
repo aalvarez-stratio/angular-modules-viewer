@@ -62,17 +62,9 @@
     height: calc(100% - 92px);
     padding: 0 var(--npa-spacing-24) var(--npa-spacing-24);
 
-    npa-spinner, .assets-graph__graph {
-      display: flex;
+    .assets-graph__graph {
       width: 100%;
-      height: calc(100% - 1px); // Workaround for spinner svg rotation.
-    }
-
-    .assets-graph__graph--hide {
-      width: 0;
-      height: 0;
-      display: none;
-      position: absolute;
+      height: 100%;
     }
   }
 }

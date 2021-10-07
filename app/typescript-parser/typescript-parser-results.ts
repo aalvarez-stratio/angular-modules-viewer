@@ -36,11 +36,11 @@ export class TypescriptParserResults {
     }
   }
 
-  addNode(nodeId: string, group: string = 'module'): void {
+  addNode(nodeId: string, group: string = 'module', label: string = ''): void {
     if (this._nodes.every(n => n.id !== nodeId)) {
       this._nodes.push({
         id: nodeId,
-        label: nodeId,
+        label: label || nodeId,
         group
       });
     }

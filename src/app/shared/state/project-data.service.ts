@@ -12,6 +12,7 @@ export class ProjectDataService implements OnDestroy {
   public projectData$: Observable<AnalysisResultsDTO>;
   public projectName$: Observable<string>;
   public projectGraph$: Observable<ApplicationGraph>;
+  public routesGraph$: Observable<ApplicationGraph>;
   public loadingData$: Observable<boolean>;
 
   private _serviceIsReady: boolean = false;
@@ -31,6 +32,10 @@ export class ProjectDataService implements OnDestroy {
       applicationGraph: {
         nodes: [],
         edges: []
+      },
+      routesGraph: {
+        nodes: [],
+        edges: []
       }
     });
     this._setSelectors();
@@ -44,6 +49,10 @@ export class ProjectDataService implements OnDestroy {
     this.projectGraph$ = this.projectData$.pipe(map((projectData: AnalysisResultsDTO) => ({
       nodes: projectData.applicationGraph.nodes,
       edges: projectData.applicationGraph.edges
+    })));
+    this.routesGraph$ = this.projectData$.pipe(map((projectData: AnalysisResultsDTO) => ({
+      nodes: projectData.routesGraph.nodes,
+      edges: projectData.routesGraph.edges
     })));
   }
 
