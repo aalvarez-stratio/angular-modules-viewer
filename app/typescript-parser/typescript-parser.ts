@@ -101,9 +101,13 @@ export class TypescriptParser {
                 if (!_analysisResultsDTO.pipes.includes(_declaration.name)) {
                   _analysisResultsDTO.pipes.push(_declaration.name);
                 }
-              } else {
+              } else if (_declaration.type === 'component') {
                 if (!_analysisResultsDTO.components.includes(_declaration.name)) {
                   _analysisResultsDTO.components.push(_declaration.name);
+                }
+              } else {
+                if (!_analysisResultsDTO.directives.includes(_declaration.name)) {
+                  _analysisResultsDTO.directives.push(_declaration.name);
                 }
               }
               this._results.addNode(_declaration.name, _declaration.type);
@@ -234,11 +238,17 @@ export class TypescriptParser {
         _tree.moduleName = moduleName;
         _tree.declarations = declarationsIdentifiers.map(d => {
           const _declarationName: string = d.getText();
-          let _declarationType: 'component' | 'pipe';
+          let _declarationType: 'component' | 'pipe' | 'directive';
           if (Node.isIdentifier(d)) {
             const _declarationDefinition: Node = d.getDefinitionNodes()[0];
             if (Node.isClassDeclaration(_declarationDefinition)) {
-              _declarationType = _declarationDefinition.getDecorator('Pipe') ? 'pipe' : 'component';
+              if (_declarationDefinition.getDecorator('Pipe')) {
+                _declarationType = 'pipe';
+              } else if (_declarationDefinition.getDecorator('Component')) {
+                _declarationType = 'component';
+              } else if (_declarationDefinition.getDecorator('Directive')) {
+                _declarationType = 'directive';
+              }
             }
           }
 

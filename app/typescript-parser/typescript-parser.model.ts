@@ -55,5 +55,5 @@ export type NgRouteTree = {
 
 export type NgModuleDeclaration = {
   name: string;
-  type: 'component' | 'pipe'
+  type: 'component' | 'pipe' | 'directive'
 }
