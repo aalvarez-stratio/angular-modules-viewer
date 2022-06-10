@@ -265,7 +265,7 @@ export class TypescriptParser {
           if (Node.isCallExpression(_importIdentifier)) {
             const isForRootRoutes: boolean = !!/RouterModule\.forRoot\((.*)\)/.exec(_importIdentifier.getText()) && !!/RouterModule\.forRoot\((.*)\)/.exec(_importIdentifier.getText())[1];
             const isForChildRoutes: boolean = !!/RouterModule\.forChild\((.*)\)/.exec(_importIdentifier.getText()) && !!/RouterModule\.forChild\((.*)\)/.exec(_importIdentifier.getText())[1];
-            if (isForRootRoutes || isForChildRoutes) {
+            if (isForRootRoutes || isForChildRoutes || (_importIdentifier.getArguments()[0] && _importIdentifier.getArguments()[0].getText() === 'appRoutes')) {
               const _routesVariable = _importIdentifier.getArguments()[0];
               if (Node.isIdentifier(_routesVariable)) {
                 const _definitionVariable = _routesVariable.getDefinitionNodes()[0];
@@ -278,6 +278,7 @@ export class TypescriptParser {
               }
             }
           }
+
 
           const _treeResult = this._buildTree(_importIdentifier.getText(), project, moduleName);
           if (Object.keys(_treeResult).length) {
@@ -365,6 +366,7 @@ export class TypescriptParser {
       }
       _routeTrees.push(_routeTree as NgRouteTree);
     }
+    console.log(_routeTrees)
     return _routeTrees;
   }
 }

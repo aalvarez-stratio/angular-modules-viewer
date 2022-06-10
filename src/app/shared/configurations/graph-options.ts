@@ -57,8 +57,8 @@ export const graphOptions: Options = {
       direction: 'UD',
       sortMethod: 'directed',
       shakeTowards: 'roots',
-      nodeSpacing: 300,
-      levelSeparation: 350
+      nodeSpacing: 600,
+      levelSeparation: 350,
     }
   }
 };
