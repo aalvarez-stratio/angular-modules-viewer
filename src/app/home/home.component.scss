@@ -1,79 +1,36 @@
+@use '~@stratiods/space-dark/mixins' as npa;
+
 :host {
   display: block;
   width: 100%;
   height: 100%;
 
-  .graph-manager {
-    width: 100%;
+  .home {
+    @include npa.createFlexBox(row, flex-start, center, nowrap);
     height: 100%;
+    width: 100%;
+    padding: var(--npa-spacing-24);
+    box-sizing: border-box;
 
-    .graph-manager__header {
-      box-sizing: border-box;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      padding: var(--npa-spacing-24) var(--npa-spacing-16) var(--npa-spacing-16);
+    .home__info-container {
+      margin-top: 180px;
+      @include npa.createFlexBox(column, center, center, nowrap);
 
-      --npa-component-width: 400px;
+      & > DIV {
+        @include npa.createFlexBox(column, center, center, nowrap);
+        --npa-component-width: 500px;
 
-      .graph-manager__header-main {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: var(--npa-spacing-16);
-      }
-
-      .graph-manager__header-aggregations {
-        height: 30px;
-        display: flex;
-
-        .npa-tag:not(:last-child) {
-          margin-right: var(--npa-spacing-8);
+        & :not(:last-child) {
+          margin-bottom: var(--npa-spacing-16);
         }
 
-        .npa-tag--module {
-          --npa-tag-border-color: var(--npa-color-action-1);
-          --npa-tag-background-color: var(--npa-color-action-1);
-          --npa-tag-text-color: var(--npa-color-action-8);
-        }
-        .npa-tag--component {
-          --npa-tag-border-color: var(--npa-color-green-1);
-          --npa-tag-background-color: var(--npa-color-green-1);
-          --npa-tag-text-color: var(--npa-color-green-8);
-        }
-        .npa-tag--service {
-          --npa-tag-border-color: var(--npa-color-orange-1);
-          --npa-tag-background-color: var(--npa-color-orange-1);
-          --npa-tag-text-color: var(--npa-color-orange-8);
-        }
-        .npa-tag--directive {
-          --npa-tag-border-color: var(--npa-color-purple-1);
-          --npa-tag-background-color: var(--npa-color-purple-1);
-          --npa-tag-text-color: var(--npa-color-purple-8);
-        }
-        .npa-tag--pipe {
-          --npa-tag-border-color: var(--npa-color-coral-1);
-          --npa-tag-background-color: var(--npa-color-coral-1);
-          --npa-tag-text-color: var(--npa-color-coral-8);
+        .home__or-label {
+          margin: var(--npa-spacing-16) 0 var(--npa-spacing-24);
         }
       }
-    }
 
-    .graph-manager__graph-container {
-      width: 100%;
-      height: calc(100% - 122px);
-
-      npa-spinner, .graph-manager__graph {
-        display: flex;
-        width: 100%;
-        height: calc(100% - 1px); // Workaround for spinner svg rotation.
-      }
-
-      .graph-manager__graph--hide {
-        width: 0;
-        height: 0;
-        display: none;
-        position: absolute;
+      BUTTON {
+        margin-top: var(--npa-spacing-8);
       }
     }
   }

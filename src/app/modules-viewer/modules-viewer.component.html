@@ -1,0 +1,61 @@
+<div class="modules-viewer npa-color--background">
+  <div class="modules-viewer__header" *ngIf="(projectData.loadingData$ | async) === false">
+    <div class="modules-viewer__header-main">
+      <h1>{{projectData.projectName$ | async | titlecase}}</h1>
+      <button class="npa-button" (click)="showLoadProjectModal$.next(true)">Change Project</button>
+    </div>
+    <div class="modules-viewer__header-tabs">
+      <npa-tab [tabs]="sectionTabs" [borderBottom]="true" (tabClick)="selectedTab$.next($event.id)"></npa-tab>
+    </div>
+  </div>
+  <ng-container *ngIf="selectedTab$ | async as selectedTab">
+    <app-modules-viewer-overview
+      *ngIf="selectedTab === 'overview' && (projectData.loadingData$ | async) === false"
+      [routes]="(projectData.projectData$ | async)?.routes"
+      [totalComponents]="(projectData.projectData$ | async)?.components?.length"
+    ></app-modules-viewer-overview>
+    <app-assets-graph
+      *ngIf="selectedTab === 'graph' && (projectData.loadingData$ | async) === false"
+      [applicationGraph]="applicationGraph$ | async"
+    ></app-assets-graph>
+    <app-routes-graph
+      *ngIf="selectedTab === 'routes' && (projectData.loadingData$ | async) === false"
+      [routesGraph]="routesGraph$ | async">
+    </app-routes-graph>
+  </ng-container>
+  <div class="modules-viewer__spinner-container" *ngIf="projectData.loadingData$ | async">
+    <npa-spinner></npa-spinner>
+    <span>You can go for a coffee ^^</span>
+  </div>
+</div>
+<npa-modal
+  [title]="'Set project to analysis'"
+  [showModal]="showLoadProjectModal$ | async"
+  [modalConfig]="loadProjectModalConfig"
+  (closeModal)="showLoadProjectModal$.next(false)">
+  <div class="set-project-modal">
+    <div class="set-project-modal__path-control">
+      <label for="ts-config" class="npa-color--space-6">Path of tsconfig</label>
+      <input
+        id="ts-config"
+        type="text"
+        class="npa-input npa-input--action-clear"
+        placeholder="Type something for search..."
+        [formControl]="tsConfigControl"
+        npaFb>
+    </div>
+    <div class="set-project-modal__path-control">
+      <label for="package-json" class="npa-color--space-6">Path of package</label>
+      <input
+        id="package-json"
+        type="text"
+        class="npa-input npa-input--action-clear"
+        placeholder="Type something for search..."
+        [formControl]="packageJsonControl"
+        npaFb>
+    </div>
+    <div class="set-project-modal__button-container">
+      <button class="npa-button" (click)="requestResults()">Change</button>
+    </div>
+  </div>
+</npa-modal>

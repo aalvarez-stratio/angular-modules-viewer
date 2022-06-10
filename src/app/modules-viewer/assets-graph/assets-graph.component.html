@@ -1,0 +1,43 @@
+<div class="assets-graph__header">
+  <div class="assets-graph__header-controls">
+    <div class="assets-graph__url">
+      <div *ngIf="showGraphControls$ | async">
+        <label for="search" class="npa-color--space-6"></label>
+        <input
+          id="search"
+          type="text"
+          class="npa-input npa-input--search npa-input--action-clear"
+          placeholder="Type something for search..."
+          [formControl]="searchControl"
+          npaDropdownEvents [eventToTrigger]="'click'" (event)="showSearchOptions$.next(true)"
+          npaKeyboardEmitter (keyboardEmitter)="onKeyboardEmit($event)"
+          npaFormBehavior [render]="true" (clickIcon)="searchControl.setValue('')">
+      </div>
+
+      <npa-dropdown
+        *ngIf="(searchOptions$ | async).length"
+        [config]="dropdownConfig"
+        [options]="searchOptions$ | async"
+        [showDropdown]="showSearchOptions$ | async"
+        [keyboardControl]="dropdownKeyboardEvents$"
+        (showDropdownChange)="showSearchOptions$.next($event)"
+        (optionSelected)="searchControl.setValue($event.value); processSearchValue($event.value)"
+        (closeDropdown)="showSearchOptions$.next(false)">
+      </npa-dropdown>
+    </div>
+    <div class="assets-graph__header-aggregations">
+      <ng-container *ngIf="showGraphControls$ | async">
+        <ng-container *ngIf="graphAggregations$ | async as graphAggregations">
+          <div class="npa-tag npa-tag--module">{{graphAggregations.module}} Modules</div>
+          <div class="npa-tag npa-tag--component">{{graphAggregations.component}} Components</div>
+          <div class="npa-tag npa-tag--service">{{graphAggregations.service}} Services</div>
+          <div class="npa-tag npa-tag--directive">{{graphAggregations.directive}} Directives</div>
+          <div class="npa-tag npa-tag--pipe">{{graphAggregations.pipe}} Pipes</div>
+        </ng-container>
+      </ng-container>
+    </div>
+  </div>
+</div>
+<div class="assets-graph__graph-container">
+  <div id="graph" class="assets-graph__graph"></div>
+</div>

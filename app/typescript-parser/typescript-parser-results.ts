@@ -1,17 +1,17 @@
 import { Edge, Node } from 'vis-network/peer';
+import { RoutePath } from './typescript-parser.model';
 
-export interface ITypescriptParserResults {
-  nodes: Node[];
-  edges: Edge[];
-}
-
-export default class TypescriptParserResults {
+export class TypescriptParserResults {
+  private _projectName: string;
   private readonly _nodes: Node[];
   private readonly _edges: Edge[];
+  private readonly _routePaths: RoutePath[];
 
   constructor() {
+    this._projectName = '';
     this._nodes = [];
     this._edges = [];
+    this._routePaths = [];
   }
 
   getNodes(): Node[] {
@@ -22,11 +22,12 @@ export default class TypescriptParserResults {
     return this._edges;
   }
 
-  getResult(): ITypescriptParserResults {
-    return {
-      nodes: this.getNodes(),
-      edges: this.getEdges()
-    }
+  getRoutePaths(): RoutePath[] {
+    return this._routePaths;
+  }
+
+  getProjectName(): string {
+    return this._projectName;
   }
 
   addNodes(nodeIds: string[], group: string = 'module'): void {
@@ -35,11 +36,11 @@ export default class TypescriptParserResults {
     }
   }
 
-  addNode(nodeId: string, group: string = 'module'): void {
+  addNode(nodeId: string, group: string = 'module', label: string = ''): void {
     if (this._nodes.every(n => n.id !== nodeId)) {
       this._nodes.push({
         id: nodeId,
-        label: nodeId,
+        label: label || nodeId,
         group
       });
     }
@@ -61,5 +62,15 @@ export default class TypescriptParserResults {
     for (const toNodeName of toNodeNames) {
       this.addEdge(fromNodeName, toNodeName, edgeType);
     }
+  }
+
+  addRoutePath(newRoutePath: RoutePath): void {
+    if (!this._routePaths.find(routePath => routePath.path === newRoutePath.path)) {
+      this._routePaths.push(newRoutePath);
+    }
+  }
+
+  setProjectName(projectName: string): void {
+    this._projectName = projectName;
   }
 }

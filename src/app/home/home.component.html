@@ -1,33 +1,29 @@
-<div class="graph-manager npa-color--background">
-  <div class="graph-manager__header">
-    <div class="graph-manager__header-main">
-      <div class="graph-manager__url">
-        <div>
-          <label for="url" class="npa-color--space-6"></label>
-          <input
-            id="url"
-            type="text"
-            class="npa-input"
-            placeholder="Type a folder path..."
-            [formControl]="urlControl"
-            npaFb>
-        </div>
-      </div>
-      <button class="npa-button" (click)="requestResults()">Load Graph</button>
-    </div>
-    <div class="graph-manager__header-aggregations">
-      <ng-container *ngIf="graphAggregations$ | async as graphAggregations">
-        <div class="npa-tag npa-tag--small npa-tag--module">{{graphAggregations.module}} Modules</div>
-        <div class="npa-tag npa-tag--small npa-tag--component">{{graphAggregations.component}} Components</div>
-        <div class="npa-tag npa-tag--small npa-tag--service">{{graphAggregations.service}} Services</div>
-        <div class="npa-tag npa-tag--small npa-tag--directive">{{graphAggregations.directive}} Directives</div>
-        <div class="npa-tag npa-tag--small npa-tag--pipe">{{graphAggregations.pipe}} Pipes</div>
-      </ng-container>
-    </div>
-  </div>
-  <div class="graph-manager__graph-container">
-    <div id="graph" class="graph-manager__graph" [class.graph-manager__graph--hide]="loadingGraph$ | async"></div>
-    <npa-spinner *ngIf="loadingGraph$ | async"></npa-spinner>
-  </div>
+<div class="home npa-color--background">
 
+  <div class="home__info-container">
+    <h1>Angular Modules Viewer</h1>
+    <div>
+      <div>
+        <label for="package-json" class="npa-color--space-6">Path of tsconfig</label>
+        <input
+          id="package-json"
+          type="text"
+          class="npa-input npa-input--search npa-input--action-clear"
+          placeholder="Type something for search..."
+          [formControl]="tsConfigControl"
+          npaFormBehavior [render]="true" (clickIcon)="tsConfigControl.setValue('')">
+      </div>
+      <div>
+        <label for="search" class="npa-color--space-6">Path of package</label>
+        <input
+          id="search"
+          type="text"
+          class="npa-input npa-input--search npa-input--action-clear"
+          placeholder="Type something for search..."
+          [formControl]="packageJsonControl"
+          npaFormBehavior [render]="true" (clickIcon)="packageJsonControl.setValue('')">
+      </div>
+      <button class="npa-button" (click)="processPath()">Analyze</button>
+    </div>
+  </div>
 </div>

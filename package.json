@@ -1,11 +1,11 @@
 {
   "name": "angular-electron",
   "version": "10.1.0",
-  "description": "Angular 12 with Electron (Typescript + SASS + Hot Reload)",
+  "description": "View your angular modules in a graph model",
   "homepage": "https://github.com/maximegris/angular-electron",
   "author": {
-    "name": "Maxime GRIS",
-    "email": "maxime.gris@gmail.com"
+    "name": "Antonio Alvarez Torres",
+    "email": ""
   },
   "keywords": [
     "angular",
@@ -41,6 +41,7 @@
     "lint": "ng lint"
   },
   "dependencies": {
+    "@angular/animations": "12.2.6",
     "@angular/common": "12.1.2",
     "@angular/compiler": "12.1.2",
     "@angular/core": "12.1.2",
@@ -49,18 +50,22 @@
     "@angular/platform-browser": "12.1.2",
     "@angular/platform-browser-dynamic": "12.1.2",
     "@angular/router": "12.1.2",
-    "@stratiods/core": "^1.5.3",
-    "@stratiods/form-behavior": "^1.5.2",
-    "@stratiods/modal": "^1.5.3",
-    "@stratiods/spinner": "^1.5.2",
-    "@stratiods/tooltip": "^1.5.1",
     "@egjs/hammerjs": "2.0.17",
     "@electron/remote": "1.2.0",
     "@phenomnomnominal/tsquery": "4.1.1",
+    "@stratiods/core": "^1.5.3",
+    "@stratiods/dropdown": "1.5.4",
+    "@stratiods/form-behavior": "^1.5.2",
+    "@stratiods/modal": "^1.5.3",
     "@stratiods/space-dark": "5.1.0",
+    "@stratiods/spinner": "^1.5.2",
+    "@stratiods/tab": "1.5.0",
+    "@stratiods/tooltip": "^1.5.1",
+    "glob": "^7.1.7",
     "keycharm": "0.4.0",
     "ngx-electron": "2.2.0",
     "rxjs": "~6.6.0",
+    "ts-morph": "^12.0.0",
     "tslib": "^2.1.0",
     "vis-data": "7.1.2",
     "vis-network": "9.1.0",

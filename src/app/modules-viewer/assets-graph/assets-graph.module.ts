@@ -1,23 +1,26 @@
 import { NgModule } from '@angular/core';
-
-import { HomeComponent } from './home.component';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
+import { AssetsGraphComponent } from './assets-graph.component';
 import { DropdownModule } from '@stratiods/dropdown';
 import { KeyboardEmitterModule } from '@stratiods/event-controls';
 import { FormBehaviorModule } from '@stratiods/form-behavior';
-import { HomeRoutingModule } from './home-routing.module';
+import { ReactiveFormsModule } from '@angular/forms';
+import GraphManagerService from '../../shared/graph-manager.service';
 
 @NgModule({
-  declarations: [HomeComponent],
+  declarations: [
+    AssetsGraphComponent
+  ],
+  exports: [
+    AssetsGraphComponent
+  ],
   imports: [
     CommonModule,
-    ReactiveFormsModule,
     DropdownModule,
     KeyboardEmitterModule,
     FormBehaviorModule,
-    HomeRoutingModule
-  ]
+    ReactiveFormsModule
+  ],
+  providers: [GraphManagerService]
 })
-export class HomeModule {
-}
+export class AssetsGraphModule { }
